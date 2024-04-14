@@ -1,0 +1,42 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcrotmrvepics"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_mvm4w"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mvm4w")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TextureRect" type="TextureRect" parent="VBox/Panel"]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Timeline" type="HSlider" parent="VBox"]
+layout_mode = 2
+
+[node name="HBox" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="PlayPauseButton" type="Button" parent="VBox/HBox"]
+layout_mode = 2
+text = "Play/Pause"
+
+[connection signal="pressed" from="VBox/HBox/PlayPauseButton" to="." method="_on_play_pause_button_pressed"]
