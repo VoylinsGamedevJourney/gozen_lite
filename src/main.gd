@@ -8,6 +8,8 @@ var is_playing: bool = false
 
 
 func _ready() -> void:
+	var video: Video = Video.new()
+	print(video.print_something("texting"))
 	pass
 
 
