@@ -2,5 +2,5 @@
 	path = gd_extensions/godot_cpp
 	url = git@github.com:godotengine/godot-cpp.git
 [submodule "gd_extensions/go/ffmpeg"]
-	path = gd_extensions/go/ffmpeg
+	path = gd_extensions/gozen/ffmpeg
 	url = git@github.com:FFmpeg/FFmpeg.git
