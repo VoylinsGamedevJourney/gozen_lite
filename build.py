@@ -1,6 +1,9 @@
-import os
+import subprocess
 
 
-os.chdir("gd_extensions/gozen")
-os.system("scons -j 10 target=template_debug")
-os.chdir("../..")
+subprocess.run(
+	'scons -j 10 target=template_debug platform=windows', 
+	shell=True, cwd='gd_extensions/gozen')
+#subprocess.run(
+#	'scons -j 10 target=template_debug platform=linux', 
+#	shell=True, cwd='gd_extensions/gozen')
