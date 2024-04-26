@@ -39,4 +39,6 @@ alignment = 1
 layout_mode = 2
 text = "Play/Pause"
 
+[node name="AudioStream1" type="AudioStreamPlayer" parent="."]
+
 [connection signal="pressed" from="VBox/HBox/PlayPauseButton" to="." method="_on_play_pause_button_pressed"]
