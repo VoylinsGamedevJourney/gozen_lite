@@ -94,7 +94,16 @@ void Video::open_video(String a_path) {
 		return;
 	}
 
-	// Open codecs
+	// Enable multi-threading for decoding - Audio
+	// set codec to automatically determine how many threads suits best for the decoding job
+	av_codec_ctx_audio->thread_count = 0;
+	if (av_codec_audio->capabilities & AV_CODEC_CAP_FRAME_THREADS)
+		av_codec_ctx_audio->thread_type = FF_THREAD_FRAME;
+	else if (av_codec_audio->capabilities & AV_CODEC_CAP_SLICE_THREADS)
+		av_codec_ctx_audio->thread_type = FF_THREAD_SLICE;
+	else av_codec_ctx_audio->thread_count = 1; //don't use multithreading
+
+	// Open codec
 	if (avcodec_open2(av_codec_ctx_audio, av_codec_audio, NULL)) {
 		UtilityFunctions::printerr("Couldn't open audio codec!");
 		close_video();
@@ -169,7 +178,7 @@ Ref<AudioStreamWAV> Video::get_audio() {
 	}
 
 	// Set the seeker to the beginning
-	response = av_seek_frame(av_format_ctx, -1, 0, AVSEEK_FLAG_FRAME | AVSEEK_FLAG_ANY);
+	response = av_seek_frame(av_format_ctx, av_stream_audio->index, 0, AVSEEK_FLAG_FRAME | AVSEEK_FLAG_ANY);
 	avcodec_flush_buffers(av_codec_ctx_audio);
 	if (response < 0) {
 		UtilityFunctions::printerr("Can't seek to the beginning!");
@@ -178,7 +187,8 @@ Ref<AudioStreamWAV> Video::get_audio() {
 
 	av_packet = av_packet_alloc();
 	av_frame = av_frame_alloc();
-	PackedByteArray l_audio_data;
+	PackedByteArray l_audio_data = PackedByteArray();
+	size_t l_audio_size = 0;
 
 	while (av_read_frame(av_format_ctx, av_packet) >= 0) {
 		
@@ -222,24 +232,14 @@ Ref<AudioStreamWAV> Video::get_audio() {
 					av_frame_unref(l_av_new_frame);
 					break;
 				}
-				if (swr_get_out_samples(swr_ctx, av_frame->nb_samples) != av_frame->nb_samples)
-					UtilityFunctions::printerr("Number of samples not equal!");
 
-				size_t l_unpadded_linesize = av_frame->nb_samples * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
-				std::vector<uint16_t> l_audio_vector(l_unpadded_linesize);
-				memcpy(l_audio_vector.data(), l_av_new_frame->extended_data[0], l_unpadded_linesize);
+				size_t l_byte_size = l_av_new_frame->nb_samples * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+				if (av_codec_ctx_audio->ch_layout.nb_channels >= 2)
+					l_byte_size *= 2;
 
-				byte_array = PackedByteArray();
-				byte_array.resize(l_unpadded_linesize * 2);
-				
-				u_int16_t l_byte_offset = 0;
-				for (size_t i = 0; i < l_unpadded_linesize; ++i) {
-					u_int16_t l_value = ((u_int16_t *)l_av_new_frame->extended_data[0])[i];
-					byte_array.encode_s16(l_byte_offset, l_value);
-					l_byte_offset += sizeof(u_int16_t);
-				}
-
-				l_audio_data.append_array(byte_array);
+				l_audio_data.resize(l_audio_size + l_byte_size);
+				memcpy(&(l_audio_data.ptrw()[l_audio_size]), l_av_new_frame->extended_data[0], l_byte_size);
+				l_audio_size += l_byte_size;
 
 				av_frame_unref(av_frame);
 			}
