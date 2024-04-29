@@ -2,6 +2,7 @@
 
 #include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/audio_stream_wav.hpp>
+#include <godot_cpp/classes/image_texture.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 extern "C" {
@@ -33,11 +34,12 @@ private:
 	AVFrame* av_frame = nullptr;
 	AVPacket* av_packet = nullptr;
 
+	struct SwsContext* sws_ctx = nullptr;
 	struct SwrContext* swr_ctx = nullptr;
 
-	PackedByteArray byte_array;
+	PackedByteArray byte_array; // Only for video frames
 
-	int response = 0;
+	int response = 0, src_linesize[4] = {0,0,0,0};
 
 public:
 
@@ -48,9 +50,12 @@ public:
 	void open_video(String a_path);
 	void close_video();
 
-	void print_av_error(const char* a_message);
+	Ref<Image> seek_frame(int a_frame_nr);
+	Ref<Image> next_frame();
 
 	Ref<AudioStreamWAV> get_audio();
+	
+	void print_av_error(const char* a_message);
 
 
 protected:
@@ -59,10 +64,12 @@ protected:
 
 
 	static inline void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("open_video", "a_path"),	&Video::open_video);
-		ClassDB::bind_method(D_METHOD("close_video"),	&Video::close_video);
+		ClassDB::bind_method(D_METHOD("open_video", "a_path"), &Video::open_video);
+		ClassDB::bind_method(D_METHOD("close_video"), &Video::close_video);
 
-		ClassDB::bind_method(D_METHOD("get_audio"),	&Video::get_audio);
+		ClassDB::bind_method(D_METHOD("seek_frame", "a_frame_nr"), &Video::seek_frame);
+		ClassDB::bind_method(D_METHOD("next_frame"), &Video::next_frame);
+		ClassDB::bind_method(D_METHOD("get_audio"), &Video::get_audio);
 	}
 
 };

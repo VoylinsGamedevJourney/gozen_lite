@@ -11,12 +11,13 @@ var is_playing: bool = false
 
 func _ready() -> void:
 	video.open_video(VIDEO_PATH)
-	$AudioStream1.stream = video.get_audio()
-	$AudioStream1.play()
+	#$AudioStream1.stream = video.get_audio()
+	#$AudioStream1.play()
 
 
 func _process(a_delta: float) -> void:
-	pass
+	if is_playing:
+		$VBox/Panel/TextureRect.texture.set_image(video.next_frame())
 
 
 func _on_play_pause_button_pressed():

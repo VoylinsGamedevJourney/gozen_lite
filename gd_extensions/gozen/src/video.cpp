@@ -61,13 +61,36 @@ void Video::open_video(String a_path) {
 		return;
 	}
 
-	// Open codecs
+	// Enable multi-threading for decoding - Video
+	// set codec to automatically determine how many threads suits best for the decoding job
+	av_codec_ctx_video->thread_count = 0;
+	if (av_codec_video->capabilities & AV_CODEC_CAP_FRAME_THREADS)
+		av_codec_ctx_video->thread_type = FF_THREAD_FRAME;
+	else if (av_codec_video->capabilities & AV_CODEC_CAP_SLICE_THREADS)
+		av_codec_ctx_video->thread_type = FF_THREAD_SLICE;
+	else av_codec_ctx_video->thread_count = 1; //don't use multithreading
+
+	// Open codec
 	if (avcodec_open2(av_codec_ctx_video, av_codec_video, NULL)) {
 		UtilityFunctions::printerr("Couldn't open video codec!");
 		close_video();
 		return;
 	}
 
+	// Setup SWS context for converting frame from YUV to RGB
+	sws_ctx = sws_getContext(
+		av_codec_ctx_video->width, av_codec_ctx_video->height, (AVPixelFormat)av_stream_video->codecpar->format,
+		av_codec_ctx_video->width, av_codec_ctx_video->height, AV_PIX_FMT_RGB24,
+		SWS_BILINEAR, NULL, NULL, NULL);
+	if (!sws_ctx) {
+		UtilityFunctions::printerr("Couldn't get SWS context!");
+		close_video();
+		return;
+	}
+
+	// Byte_array setup
+	byte_array.resize(av_codec_ctx_video->width * av_codec_ctx_video->height * 3);
+	src_linesize[0] = av_codec_ctx_video->width * 3;
 
 	// Audio Decoder Setup 
 
@@ -153,6 +176,8 @@ void Video::close_video() {
 
 	if (swr_ctx)
 		swr_free(&swr_ctx);
+	if (sws_ctx)
+		sws_freeContext(sws_ctx);
 
 	if (av_frame)
 		av_frame_free(&av_frame);
@@ -262,4 +287,69 @@ Ref<AudioStreamWAV> Video::get_audio() {
 
 	return l_audio_wav;
 
+}
+
+
+Ref<Image> Video::seek_frame(int a_frame_nr) {
+	return memnew(Image);
+}
+
+
+Ref<Image> Video::next_frame() {
+	
+	Ref<Image> l_image = memnew(Image);
+
+	if (!is_open) {
+		UtilityFunctions::printerr("Video isn't open yet!");
+		return l_image;
+	}
+
+	av_packet = av_packet_alloc();
+	av_frame = av_frame_alloc();
+
+	while (true) {
+		
+		// Demux packet
+		response = av_read_frame(av_format_ctx, av_packet);
+		if (response != 0)
+			break;
+		if (av_packet->stream_index != av_stream_video->index) {
+			av_packet_unref(av_packet);
+			continue;
+		}
+
+		// Send packet for decoding
+		response = avcodec_send_packet(av_codec_ctx_video, av_packet);
+		av_packet_unref(av_packet);
+		if (response != 0)
+			break;
+
+		// Valid packet found, decode frame
+		while (true) {
+			
+			// Receive all frames
+			response = avcodec_receive_frame(av_codec_ctx_video, av_frame);
+			if (response != 0) {
+				av_frame_unref(av_frame);
+				break;
+			}
+
+			uint8_t* l_dest_data[1] = { byte_array.ptrw()};
+			sws_scale(sws_ctx, av_frame->data, av_frame->linesize, 0, av_frame->height, l_dest_data, src_linesize);
+			l_image->set_data(av_frame->width, av_frame->height, 0, l_image->FORMAT_RGB8, byte_array);
+
+			// Cleanup
+			av_frame_unref(av_frame);
+			av_frame_free(&av_frame);
+			av_packet_free(&av_packet);
+			
+			return l_image;
+		} 
+	}
+
+	// Cleanup
+	av_frame_free(&av_frame);
+	av_packet_free(&av_packet);
+
+	return l_image;
 }
