@@ -39,7 +39,9 @@ private:
 
 	PackedByteArray byte_array; // Only for video frames
 
-	int response = 0, src_linesize[4] = {0,0,0,0};
+	int response = 0, src_linesize[4] = {0,0,0,0}, total_frame_number = 0;
+	long start_time_video = 0, start_time_audio = 0, frame_timestamp = 0, current_pts = 0;
+	double average_frame_duration = 0, stream_time_base_video = 0, stream_time_base_audio = 0;
 
 public:
 
@@ -54,6 +56,9 @@ public:
 	Ref<Image> next_frame();
 
 	Ref<AudioStreamWAV> get_audio();
+
+	inline int get_total_frame_nr() { return total_frame_number;};
+	void _get_total_frame_nr();
 	
 	void print_av_error(const char* a_message);
 
@@ -70,6 +75,8 @@ protected:
 		ClassDB::bind_method(D_METHOD("seek_frame", "a_frame_nr"), &Video::seek_frame);
 		ClassDB::bind_method(D_METHOD("next_frame"), &Video::next_frame);
 		ClassDB::bind_method(D_METHOD("get_audio"), &Video::get_audio);
+
+		ClassDB::bind_method(D_METHOD("get_total_frame_nr"), &Video::get_total_frame_nr);
 	}
 
 };

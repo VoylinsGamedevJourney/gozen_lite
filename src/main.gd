@@ -11,6 +11,10 @@ var is_playing: bool = false
 
 func _ready() -> void:
 	video.open_video(VIDEO_PATH)
+	print(video.get_total_frame_nr())
+	var start_time := Time.get_ticks_msec()
+	$VBox/Panel/TextureRect.texture.set_image(video.seek_frame(560))
+	print(Time.get_ticks_msec()- start_time)
 	#$AudioStream1.stream = video.get_audio()
 	#$AudioStream1.play()
 
