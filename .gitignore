@@ -22,3 +22,7 @@ __pycache__
 
 # FFmpeg
 ffmpeg_bin
+
+# Testing + export folders
+test_footage/
+exports/

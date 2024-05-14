@@ -43,6 +43,10 @@ private:
 	long start_time_video = 0, start_time_audio = 0, frame_timestamp = 0, current_pts = 0;
 	double average_frame_duration = 0, stream_time_base_video = 0, stream_time_base_audio = 0;
 
+	bool is_open = false;
+	bool variable_framerate = false;
+	float frame_time = 0.0;
+
 public:
 
 	Video() {}
@@ -52,12 +56,19 @@ public:
 	void open_video(String a_path);
 	void close_video();
 
+	inline bool is_video_open() { return is_open; }
+
 	Ref<Image> seek_frame(int a_frame_nr);
 	Ref<Image> next_frame();
 
 	Ref<AudioStreamWAV> get_audio();
 
 	inline float get_framerate() { return av_q2d(av_stream_video->r_frame_rate); }
+	inline float get_avg_framerate() { return av_q2d(av_stream_video->avg_frame_rate); }
+	inline float get_context_framerate() { return av_q2d(av_codec_ctx_video->framerate); }
+
+	inline bool is_framerate_variable() { return variable_framerate; }
+	inline float get_variable_frame_time() { return frame_time; }
 
 	inline int get_total_frame_nr() { return total_frame_number;};
 	void _get_total_frame_nr();
@@ -67,18 +78,22 @@ public:
 
 protected:
 
-	bool is_open = false;
-
-
 	static inline void _bind_methods() {
 		ClassDB::bind_method(D_METHOD("open_video", "a_path"), &Video::open_video);
 		ClassDB::bind_method(D_METHOD("close_video"), &Video::close_video);
+		
+		ClassDB::bind_method(D_METHOD("is_video_open"), &Video::is_video_open);
 
 		ClassDB::bind_method(D_METHOD("seek_frame", "a_frame_nr"), &Video::seek_frame);
 		ClassDB::bind_method(D_METHOD("next_frame"), &Video::next_frame);
 		ClassDB::bind_method(D_METHOD("get_audio"), &Video::get_audio);
-
+		
 		ClassDB::bind_method(D_METHOD("get_framerate"), &Video::get_framerate);
+		ClassDB::bind_method(D_METHOD("get_avg_framerate"), &Video::get_avg_framerate);
+		ClassDB::bind_method(D_METHOD("get_context_framerate"), &Video::get_context_framerate);
+		ClassDB::bind_method(D_METHOD("is_framerate_variable"), &Video::is_framerate_variable);
+
+		ClassDB::bind_method(D_METHOD("get_variable_frame_time"), &Video::get_variable_frame_time);
 
 		ClassDB::bind_method(D_METHOD("get_total_frame_nr"), &Video::get_total_frame_nr);
 	}

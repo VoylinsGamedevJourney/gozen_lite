@@ -1,6 +1,5 @@
 extends Control
 
-const VIDEO_PATH: String = "/storage/Youtube/02 - Gamedev Journey/vgj Outro.mp4"
 
 @onready var timeline: HSlider = $VBox/Timeline
 @onready var texture: TextureRect = $VBox/Panel/TextureRect
@@ -21,8 +20,14 @@ var fast_speed: int = 4 # Fast forward/Rewind
 var fast_rewind: bool = false
 var fast_forward: bool = false
 
+var variable_frame_rate: bool = false
+
+var thread: Thread = Thread.new()
+
+
 
 func _ready() -> void:
+	# Making it possible for files to be dropped or the player to be opened with a file
 	if OS.get_cmdline_args().size() > 1:
 		video = Video.new()
 		video.open_video(OS.get_cmdline_args()[1])
@@ -32,24 +37,34 @@ func _ready() -> void:
 
 func on_video_drop(a_files: PackedStringArray) -> void:
 	video = Video.new()
-	video.open_video(a_files[0])
-	after_video_open()
+	thread.start(video.open_video.bind(a_files[0]))
 
 
 func after_video_open() -> void:
 	$AudioStream1.stream = video.get_audio()
 	is_playing = false
-	
 	framerate = video.get_framerate()
 	max_frame = video.get_total_frame_nr()
 	frame_time = 1.0 / framerate
 	
 	seek_frame(1)
-	
+	variable_frame_rate = video.is_framerate_variable()
 	$VBox/Timeline.max_value = max_frame
 
 
+func is_video_open() -> bool:
+	if !video:
+		return false
+	return video.is_video_open()
+
+
 func _process(a_delta: float) -> void:
+	if thread.is_alive():
+		await thread.wait_to_finish()
+		after_video_open()
+	elif !is_video_open():
+		return
+
 	if is_playing:
 		time_elapsed += a_delta
 		if time_elapsed < frame_time:
@@ -66,6 +81,8 @@ func _process(a_delta: float) -> void:
 			seek_frame(1)
 			$AudioStream1.set_stream_paused(true)
 		else:
+			if variable_frame_rate:
+				frame_time = video.get_variable_frame_time()
 			$VBox/Panel/TextureRect.texture.set_image(video.next_frame())
 			if !dragging:
 				$VBox/Timeline.value = current_frame
@@ -76,6 +93,8 @@ func _process(a_delta: float) -> void:
 
 
 func seek_frame(a_frame_nr: int) -> void:
+	if !is_video_open():
+		return
 	current_frame = clampi(a_frame_nr, 1, max_frame - 1)
 	if !is_playing:
 		$AudioStream1.set_stream_paused(false)
@@ -83,11 +102,15 @@ func seek_frame(a_frame_nr: int) -> void:
 	if !is_playing:
 		$AudioStream1.set_stream_paused(true)
 	$VBox/Panel/TextureRect.texture.set_image(video.seek_frame(current_frame))
+	if variable_frame_rate:
+		frame_time = video.get_variable_frame_time()
 	if !dragging:
 		$VBox/Timeline.value = current_frame
 
 
 func _on_play_pause_button_pressed():
+	if !is_video_open():
+		return
 	is_playing = !is_playing
 	if is_playing:
 		$AudioStream1.play($AudioStream1.get_playback_position())

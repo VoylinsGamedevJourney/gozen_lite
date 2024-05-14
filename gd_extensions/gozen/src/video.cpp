@@ -167,9 +167,11 @@ void Video::open_video(String a_path) {
 	}
 
 	// Setting up variables
+	variable_framerate = true;
 	stream_time_base_audio = av_q2d(av_stream_audio->time_base) * 1000.0 * 10000.0; // Converting timebase to ticks
 	start_time_audio = av_stream_audio->start_time != AV_NOPTS_VALUE ? (long)(av_stream_audio->start_time * stream_time_base_audio): 0;
 
+	variable_framerate = av_q2d(av_codec_ctx_video->framerate) != av_q2d(av_stream_video->avg_frame_rate);
 	is_open = true;
 }
 
@@ -291,13 +293,12 @@ Ref<AudioStreamWAV> Video::get_audio() {
 
 	// Audio creation
 	l_audio_wav->set_format(l_audio_wav->FORMAT_16_BITS);
-	l_audio_wav->set_mix_rate(av_codec_ctx_audio->sample_rate); // TODO: test bit_rate 
+	l_audio_wav->set_mix_rate(av_codec_ctx_audio->sample_rate); 
 	l_audio_wav->set_stereo(av_codec_ctx_audio->ch_layout.nb_channels >= 2);
 	l_audio_wav->set_data(l_audio_data);
 
 
 	return l_audio_wav;
-
 }
 
 
@@ -372,7 +373,10 @@ Ref<Image> Video::seek_frame(int a_frame_nr) {
 			av_frame_unref(av_frame);
 			av_frame_free(&av_frame);
 			av_packet_free(&av_packet);
-			
+
+			if (variable_framerate)
+				frame_time = (float)(av_frame->pts * av_q2d(av_stream_video->time_base));
+
 			return l_image;
 		} 
 	}
@@ -432,6 +436,9 @@ Ref<Image> Video::next_frame() {
 			av_frame_unref(av_frame);
 			av_frame_free(&av_frame);
 			av_packet_free(&av_packet);
+
+			if (variable_framerate)
+				frame_time = (float)(av_frame->pts * av_q2d(av_stream_video->time_base));
 			
 			return l_image;
 		} 
