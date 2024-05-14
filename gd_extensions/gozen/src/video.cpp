@@ -356,7 +356,7 @@ Ref<Image> Video::seek_frame(int a_frame_nr) {
 
 		// Valid packet found, decode frame
 		while (true) {
-			
+				
 			// Receive all frames
 			response = avcodec_receive_frame(av_codec_ctx_video, av_frame);
 			if (response != 0) {

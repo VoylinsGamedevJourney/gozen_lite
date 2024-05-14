@@ -63,8 +63,8 @@ func is_video_open() -> bool:
 
 
 func _process(a_delta: float) -> void:
-	if thread.is_alive():
-		await thread.wait_to_finish()
+	if thread.is_started() and is_video_open():
+		thread.wait_to_finish()
 		after_video_open()
 	elif !is_video_open():
 		return
