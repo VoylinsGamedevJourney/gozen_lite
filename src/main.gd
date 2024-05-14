@@ -36,8 +36,11 @@ func _ready() -> void:
 
 
 func on_video_drop(a_files: PackedStringArray) -> void:
+	$LoadingLabel.visible = true
 	video = Video.new()
 	thread.start(video.open_video.bind(a_files[0]))
+	#video.open_video(a_files[0])
+	#after_video_open()
 
 
 func after_video_open() -> void:
@@ -50,6 +53,7 @@ func after_video_open() -> void:
 	seek_frame(1)
 	variable_frame_rate = video.is_framerate_variable()
 	$VBox/Timeline.max_value = max_frame
+	$LoadingLabel.visible = false
 
 
 func is_video_open() -> bool:

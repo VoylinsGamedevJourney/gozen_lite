@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://bcrotmrvepics"]
+[gd_scene load_steps=7 format=3 uid="uid://bcrotmrvepics"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_mvm4w"]
 [ext_resource type="Texture2D" uid="uid://dms0pea5t8h7e" path="res://icons/fast_rewind_48dp_FILL1_wght400_GRAD0_opsz48.png" id="2_dnk3e"]
@@ -6,6 +6,9 @@
 [ext_resource type="Texture2D" uid="uid://dmx51y6qr8c14" path="res://icons/fast_forward_48dp_FILL1_wght400_GRAD0_opsz48.png" id="4_8mxlr"]
 
 [sub_resource type="ImageTexture" id="ImageTexture_xb6sy"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_ge1ca"]
+font_size = 50
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -65,6 +68,21 @@ ignore_texture_size = true
 stretch_mode = 5
 
 [node name="AudioStream1" type="AudioStreamPlayer" parent="."]
+
+[node name="LoadingLabel" type="Label" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -11.5
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "Loading ..."
+label_settings = SubResource("LabelSettings_ge1ca")
+horizontal_alignment = 1
 
 [connection signal="drag_ended" from="VBox/Timeline" to="." method="_on_timeline_drag_ended"]
 [connection signal="drag_started" from="VBox/Timeline" to="." method="_on_timeline_drag_started"]

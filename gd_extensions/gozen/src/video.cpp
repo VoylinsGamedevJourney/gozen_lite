@@ -30,10 +30,14 @@ void Video::open_video(String a_path) {
 
 		if (!avcodec_find_decoder(av_codec_params->codec_id))
 			continue;
-		else if (av_codec_params->codec_type == AVMEDIA_TYPE_AUDIO)
+		else if (av_codec_params->codec_type == AVMEDIA_TYPE_AUDIO) {
+			UtilityFunctions::print("Audio stream found!");
 			av_stream_audio = av_format_ctx->streams[i];
-		else if (av_codec_params->codec_type == AVMEDIA_TYPE_VIDEO)
+		}
+		else if (av_codec_params->codec_type == AVMEDIA_TYPE_VIDEO) {
+			UtilityFunctions::print("Video stream found!");
 			av_stream_video = av_format_ctx->streams[i];
+		}
 	}
 
 	// Video Decoder Setup 
@@ -70,7 +74,7 @@ void Video::open_video(String a_path) {
 		av_codec_ctx_video->thread_type = FF_THREAD_SLICE;
 	else av_codec_ctx_video->thread_count = 1; //don't use multithreading
 
-	// Open codec
+	// Open codec - Video
 	if (avcodec_open2(av_codec_ctx_video, av_codec_video, NULL)) {
 		UtilityFunctions::printerr("Couldn't open video codec!");
 		close_video();
@@ -134,7 +138,7 @@ void Video::open_video(String a_path) {
 		av_codec_ctx_audio->thread_type = FF_THREAD_SLICE;
 	else av_codec_ctx_audio->thread_count = 1; //don't use multithreading
 
-	// Open codec
+	// Open codec - Audio
 	if (avcodec_open2(av_codec_ctx_audio, av_codec_audio, NULL)) {
 		UtilityFunctions::printerr("Couldn't open audio codec!");
 		close_video();
@@ -263,9 +267,17 @@ Ref<AudioStreamWAV> Video::get_audio() {
 					break;
 				}
 
+				response = swr_config_frame(swr_ctx, l_av_new_frame, av_frame);
+				if (response < 0) {
+					print_av_error("Couldn't config the audio frame!");
+					av_frame_unref(av_frame);
+					av_frame_unref(l_av_new_frame);
+					break;
+				}
+
 				response = swr_convert_frame(swr_ctx, l_av_new_frame, av_frame);
 				if (response < 0) {
-					print_av_error("Couldn't convert the frame!");
+					print_av_error("Couldn't convert the audio frame!");
 					av_frame_unref(av_frame);
 					av_frame_unref(l_av_new_frame);
 					break;
