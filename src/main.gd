@@ -66,6 +66,10 @@ func _process(a_delta: float) -> void:
 	if thread.is_started() and is_video_open():
 		thread.wait_to_finish()
 		after_video_open()
+	elif thread.is_started() and !thread.is_alive():
+		print("Could not load video!!")
+		$LoadingLabel.visible = true
+		thread.wait_to_finish()
 	elif !is_video_open():
 		return
 

@@ -175,7 +175,16 @@ void Video::open_video(String a_path) {
 	stream_time_base_audio = av_q2d(av_stream_audio->time_base) * 1000.0 * 10000.0; // Converting timebase to ticks
 	start_time_audio = av_stream_audio->start_time != AV_NOPTS_VALUE ? (long)(av_stream_audio->start_time * stream_time_base_audio): 0;
 
-	variable_framerate = av_q2d(av_codec_ctx_video->framerate) != av_q2d(av_stream_video->avg_frame_rate);
+	variable_framerate = av_q2d(av_stream_video->r_frame_rate) != av_q2d(av_stream_video->avg_frame_rate);
+	if (variable_framerate) {
+		UtilityFunctions::print("Variable framerate detected, aborting");
+		UtilityFunctions::print("Real framerate:");
+		UtilityFunctions::print(av_q2d(av_stream_video->r_frame_rate));
+		UtilityFunctions::print("Average framerate:");
+		UtilityFunctions::print(av_q2d(av_stream_video->avg_frame_rate));
+		return;
+	}
+
 	is_open = true;
 }
 
@@ -317,6 +326,7 @@ Ref<AudioStreamWAV> Video::get_audio() {
 Ref<Image> Video::seek_frame(int a_frame_nr) {
 
 	Ref<Image> l_image = memnew(Image);
+	UtilityFunctions::print("Seeking video frame");
 
 	if (!is_open) {
 		UtilityFunctions::printerr("Video isn't open yet!");
@@ -325,6 +335,8 @@ Ref<Image> Video::seek_frame(int a_frame_nr) {
 
 	av_packet = av_packet_alloc();
 	av_frame = av_frame_alloc();
+
+	UtilityFunctions::print("Seeking starting");
 
 	// Video seeking
 	frame_timestamp = (long)(a_frame_nr * average_frame_duration);
@@ -336,6 +348,7 @@ Ref<Image> Video::seek_frame(int a_frame_nr) {
 		av_packet_free(&av_packet);
 		return l_image;
 	}
+	UtilityFunctions::print("Seeking complete, entering while loop");
 
 	while (true) {
 		
@@ -347,6 +360,7 @@ Ref<Image> Video::seek_frame(int a_frame_nr) {
 			av_packet_unref(av_packet);
 			continue;
 		}
+		UtilityFunctions::print("Decoding packet");
 
 		// Send packet for decoding
 		response = avcodec_send_packet(av_codec_ctx_video, av_packet);
@@ -356,7 +370,7 @@ Ref<Image> Video::seek_frame(int a_frame_nr) {
 
 		// Valid packet found, decode frame
 		while (true) {
-				
+			UtilityFunctions::print("Packet found, decoding frame");
 			// Receive all frames
 			response = avcodec_receive_frame(av_codec_ctx_video, av_frame);
 			if (response != 0) {
@@ -370,7 +384,7 @@ Ref<Image> Video::seek_frame(int a_frame_nr) {
 				av_frame_unref(av_frame);
 				continue;
 			}
-
+			UtilityFunctions::print("Skipping to requested frame");
 			// Skip to actual requested frame
 			if ((long)(current_pts * stream_time_base_video) / 10000 < frame_timestamp / 10000) {
 				av_frame_unref(av_frame);
