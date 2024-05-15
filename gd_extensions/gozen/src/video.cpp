@@ -25,6 +25,7 @@ void Video::open_video(String a_path) {
 	}
 
 	// Getting the audio and video stream
+	AVStream* av_stream_audio = nullptr;
 	for (int i = 0; i < av_format_ctx->nb_streams; i++) {
 		AVCodecParameters* av_codec_params = av_format_ctx->streams[i]->codecpar;
 
@@ -41,6 +42,7 @@ void Video::open_video(String a_path) {
 	}
 
 	// Video Decoder Setup 
+	UtilityFunctions::print("Setting up video decoder ...");
 
 	// Setup Decoder codec context
 	const AVCodec* av_codec_video = avcodec_find_decoder(av_stream_video->codecpar->codec_id);
@@ -101,10 +103,23 @@ void Video::open_video(String a_path) {
 	start_time_video = av_stream_video->start_time != AV_NOPTS_VALUE ? (long)(av_stream_video->start_time * stream_time_base_video): 0;
 	average_frame_duration = 10000000.0 / av_q2d(av_stream_video->avg_frame_rate);  // eg. 1 sec / 25 fps = 400.000 ticks (40ms)
 
-	_get_total_frame_nr();
+	// Setting up variables
+	UtilityFunctions::print("Checking for variable framerate ...");
+	stream_time_base_audio = av_q2d(av_stream_audio->time_base) * 1000.0 * 10000.0; // Converting timebase to ticks
+	start_time_audio = av_stream_audio->start_time != AV_NOPTS_VALUE ? (long)(av_stream_audio->start_time * stream_time_base_audio): 0;
 
+	variable_framerate = av_q2d(av_stream_video->r_frame_rate) != av_q2d(av_stream_video->avg_frame_rate);
+	if (variable_framerate) {
+		UtilityFunctions::print("Variable framerate detected, aborting!! (not supported)");
+		UtilityFunctions::print("Real framerate:");
+		UtilityFunctions::print(av_q2d(av_stream_video->r_frame_rate));
+		UtilityFunctions::print("Average framerate:");
+		UtilityFunctions::print(av_q2d(av_stream_video->avg_frame_rate));
+		return;
+	}
 
 	// Audio Decoder Setup 
+	UtilityFunctions::print("Setting up audio decoder ...");
 
 	// Setup Decoder codec context
 	const AVCodec* av_codec_audio = avcodec_find_decoder(av_stream_audio->codecpar->codec_id);
@@ -115,7 +130,7 @@ void Video::open_video(String a_path) {
 	}
 
 	// Allocate codec context for decoder
-	av_codec_ctx_audio = avcodec_alloc_context3(av_codec_audio);
+	AVCodecContext* av_codec_ctx_audio = avcodec_alloc_context3(av_codec_audio);
 	if (av_codec_ctx_audio == NULL) {
 		UtilityFunctions::printerr("Couldn't allocate codec context for audio!");
 		close_video();
@@ -148,6 +163,7 @@ void Video::open_video(String a_path) {
 	av_codec_ctx_audio->request_sample_fmt = AV_SAMPLE_FMT_S16;
 
 	// Setup SWR for converting frame
+	struct SwrContext* swr_ctx = nullptr;
 	response = swr_alloc_set_opts2(
 		&swr_ctx,
 		&av_codec_ctx_audio->ch_layout, AV_SAMPLE_FMT_S16, av_codec_ctx_audio->sample_rate,
@@ -170,70 +186,14 @@ void Video::open_video(String a_path) {
 		return;
 	}
 
-	// Setting up variables
-	variable_framerate = true;
-	stream_time_base_audio = av_q2d(av_stream_audio->time_base) * 1000.0 * 10000.0; // Converting timebase to ticks
-	start_time_audio = av_stream_audio->start_time != AV_NOPTS_VALUE ? (long)(av_stream_audio->start_time * stream_time_base_audio): 0;
-
-	variable_framerate = av_q2d(av_stream_video->r_frame_rate) != av_q2d(av_stream_video->avg_frame_rate);
-	if (variable_framerate) {
-		UtilityFunctions::print("Variable framerate detected, aborting");
-		UtilityFunctions::print("Real framerate:");
-		UtilityFunctions::print(av_q2d(av_stream_video->r_frame_rate));
-		UtilityFunctions::print("Average framerate:");
-		UtilityFunctions::print(av_q2d(av_stream_video->avg_frame_rate));
-		return;
-	}
-
-	is_open = true;
-}
-
-
-void Video::close_video() {
-	is_open = false;
-
-	if (av_format_ctx)
-		avformat_close_input(&av_format_ctx);
-
-	if (av_codec_ctx_video)
-		avcodec_free_context(&av_codec_ctx_video);
-	if (av_codec_ctx_audio)
-		avcodec_free_context(&av_codec_ctx_audio);
-
-	if (swr_ctx)
-		swr_free(&swr_ctx);
-	if (sws_ctx)
-		sws_freeContext(sws_ctx);
-
-	if (av_frame)
-		av_frame_free(&av_frame);
-	if (av_packet)
-		av_packet_free(&av_packet);
-}
-
-
-void Video::print_av_error(const char* a_message) {
-	char l_error_buffer[AV_ERROR_MAX_STRING_SIZE];
-	av_strerror(response, l_error_buffer, sizeof(l_error_buffer));
-	UtilityFunctions::printerr((std::string(a_message) + l_error_buffer).c_str());
-}
-
-
-Ref<AudioStreamWAV> Video::get_audio() {
-
-	Ref<AudioStreamWAV> l_audio_wav = memnew(AudioStreamWAV);
-
-	if (!is_open) {
-		UtilityFunctions::printerr("Video isn't open yet!");
-		return l_audio_wav;
-	}
+	UtilityFunctions::print("Getting audio ...");
 
 	// Set the seeker to the beginning
 	response = av_seek_frame(av_format_ctx, av_stream_audio->index, start_time_audio, AVSEEK_FLAG_FRAME | AVSEEK_FLAG_ANY);
 	avcodec_flush_buffers(av_codec_ctx_audio);
 	if (response < 0) {
-		UtilityFunctions::printerr("Can't seek to the beginning!");
-		return l_audio_wav;
+		UtilityFunctions::printerr("Can't seek to the beginning of audio stream!");
+		return;
 	}
 
 	av_packet = av_packet_alloc();
@@ -307,48 +267,55 @@ Ref<AudioStreamWAV> Video::get_audio() {
 		av_packet_unref(av_packet);
 	}
 
+	// Audio creation
+	audio->set_format(audio->FORMAT_16_BITS);
+	audio->set_mix_rate(av_codec_ctx_audio->sample_rate); 
+	audio->set_stereo(av_codec_ctx_audio->ch_layout.nb_channels >= 2);
+	audio->set_data(l_audio_data);
 
 	// Cleanup
+	avcodec_free_context(&av_codec_ctx_audio);
+	swr_free(&swr_ctx);
 	av_frame_free(&av_frame);
 	av_packet_free(&av_packet);
 
-	// Audio creation
-	l_audio_wav->set_format(l_audio_wav->FORMAT_16_BITS);
-	l_audio_wav->set_mix_rate(av_codec_ctx_audio->sample_rate); 
-	l_audio_wav->set_stereo(av_codec_ctx_audio->ch_layout.nb_channels >= 2);
-	l_audio_wav->set_data(l_audio_data);
+	UtilityFunctions::print("Audio successfully saved to memory!");
 
-
-	return l_audio_wav;
-}
-
-
-Ref<Image> Video::seek_frame(int a_frame_nr) {
-
-	Ref<Image> l_image = memnew(Image);
-	UtilityFunctions::print("Seeking video frame");
-
-	if (!is_open) {
-		UtilityFunctions::printerr("Video isn't open yet!");
-		return l_image;
-	}
-
+	// Getting total number of frames
+	UtilityFunctions::print("Get total number of frames ...");
+	
 	av_packet = av_packet_alloc();
 	av_frame = av_frame_alloc();
-
-	UtilityFunctions::print("Seeking starting");
-
+	
 	// Video seeking
-	frame_timestamp = (long)(a_frame_nr * average_frame_duration);
+	if (av_stream_video->nb_frames > 35) {
+		total_frame_number = av_stream_video->nb_frames - 30;
+		frame_timestamp = (long)(total_frame_number * average_frame_duration);
+	}
+	else if (av_stream_video->duration > 35) {
+		total_frame_number = av_stream_video->duration - 30;
+		frame_timestamp = (long)(total_frame_number * average_frame_duration);
+	}
+	else {
+		UtilityFunctions::print("No nb_frames/duration set, loading will take longer ...");
+		UtilityFunctions::print(av_format_ctx->duration);
+		UtilityFunctions::print(av_codec_ctx_video->frame_num);
+		UtilityFunctions::print(av_codec_ctx_video->frame_size);
+		UtilityFunctions::print(av_stream_video->codecpar->video_delay);
+		UtilityFunctions::print(av_stream_video->duration);
+
+		UtilityFunctions::print(av_format_ctx->duration / av_q2d(av_stream_video->avg_frame_rate));
+		
+		frame_timestamp = av_format_ctx->duration;
+	}
+	
 	response = av_seek_frame(av_format_ctx, -1, (start_time_video + frame_timestamp) / 10, AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD);
 	avcodec_flush_buffers(av_codec_ctx_video);
 	if (response < 0) {
-		UtilityFunctions::printerr("Can't seek video file!");
+		UtilityFunctions::printerr("Can't seek video stream!");
 		av_frame_free(&av_frame);
 		av_packet_free(&av_packet);
-		return l_image;
 	}
-	UtilityFunctions::print("Seeking complete, entering while loop");
 
 	while (true) {
 		
@@ -360,7 +327,6 @@ Ref<Image> Video::seek_frame(int a_frame_nr) {
 			av_packet_unref(av_packet);
 			continue;
 		}
-		UtilityFunctions::print("Decoding packet");
 
 		// Send packet for decoding
 		response = avcodec_send_packet(av_codec_ctx_video, av_packet);
@@ -370,7 +336,7 @@ Ref<Image> Video::seek_frame(int a_frame_nr) {
 
 		// Valid packet found, decode frame
 		while (true) {
-			UtilityFunctions::print("Packet found, decoding frame");
+			
 			// Receive all frames
 			response = avcodec_receive_frame(av_codec_ctx_video, av_frame);
 			if (response != 0) {
@@ -384,7 +350,106 @@ Ref<Image> Video::seek_frame(int a_frame_nr) {
 				av_frame_unref(av_frame);
 				continue;
 			}
-			UtilityFunctions::print("Skipping to requested frame");
+
+			// Skip to actual requested frame
+			if ((long)(current_pts * stream_time_base_video) / 10000 < frame_timestamp / 10000) {
+				av_frame_unref(av_frame);
+				continue;
+			}
+			total_frame_number++;
+		} 
+	}
+
+	UtilityFunctions::print("Total number of frames is:");
+	UtilityFunctions::print(total_frame_number);
+
+
+	UtilityFunctions::print("Video file successfully loaded!");
+	is_open = true;
+}
+
+
+void Video::close_video() {
+	is_open = false;
+
+	if (av_format_ctx)
+		avformat_close_input(&av_format_ctx);
+	if (av_codec_ctx_video)
+		avcodec_free_context(&av_codec_ctx_video);
+
+	if (sws_ctx)
+		sws_freeContext(sws_ctx);
+
+	if (av_frame)
+		av_frame_free(&av_frame);
+	if (av_packet)
+		av_packet_free(&av_packet);
+}
+
+
+void Video::print_av_error(const char* a_message) {
+	char l_error_buffer[AV_ERROR_MAX_STRING_SIZE];
+	av_strerror(response, l_error_buffer, sizeof(l_error_buffer));
+	UtilityFunctions::printerr((std::string(a_message) + l_error_buffer).c_str());
+}
+
+
+Ref<Image> Video::seek_frame(int a_frame_nr) {
+
+	Ref<Image> l_image = memnew(Image);
+
+	if (!is_open) {
+		UtilityFunctions::printerr("Video isn't open yet!");
+		return l_image;
+	}
+
+	av_packet = av_packet_alloc();
+	av_frame = av_frame_alloc();
+
+	// Video seeking
+	frame_timestamp = (long)(a_frame_nr * average_frame_duration);
+	response = av_seek_frame(av_format_ctx, -1, (start_time_video + frame_timestamp) / 10, AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD);
+	avcodec_flush_buffers(av_codec_ctx_video);
+	if (response < 0) {
+		UtilityFunctions::printerr("Can't seek video file!");
+		av_frame_free(&av_frame);
+		av_packet_free(&av_packet);
+		return l_image;
+	}
+
+	while (true) {
+		
+		// Demux packet
+		response = av_read_frame(av_format_ctx, av_packet);
+		if (response != 0)
+			break;
+		if (av_packet->stream_index != av_stream_video->index) {
+			av_packet_unref(av_packet);
+			continue;
+		}
+
+		// Send packet for decoding
+		response = avcodec_send_packet(av_codec_ctx_video, av_packet);
+		av_packet_unref(av_packet);
+		if (response != 0)
+			break;
+
+		// Valid packet found, decode frame
+		while (true) {
+			// Receive all frames
+			response = avcodec_receive_frame(av_codec_ctx_video, av_frame);
+			if (response != 0) {
+				av_frame_unref(av_frame);
+				break;
+			}
+
+			// Get frame pts
+			current_pts = av_frame->best_effort_timestamp == AV_NOPTS_VALUE ? av_frame->pts : av_frame->best_effort_timestamp;
+			if (current_pts == AV_NOPTS_VALUE) {
+				av_frame_unref(av_frame);
+				continue;
+			}
+
 			// Skip to actual requested frame
 			if ((long)(current_pts * stream_time_base_video) / 10000 < frame_timestamp / 10000) {
 				av_frame_unref(av_frame);
@@ -475,68 +540,4 @@ Ref<Image> Video::next_frame() {
 	av_packet_free(&av_packet);
 
 	return l_image;
-}
-
-
-void Video::_get_total_frame_nr() {
-
-	if (av_stream_video->nb_frames > 500)
-		total_frame_number = av_stream_video->nb_frames - 30;
-	
-	av_packet = av_packet_alloc();
-	av_frame = av_frame_alloc();
-	
-	// Video seeking
-	frame_timestamp = (long)(total_frame_number * average_frame_duration);
-	response = av_seek_frame(av_format_ctx, -1, (start_time_video + frame_timestamp) / 10, AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD);
-	avcodec_flush_buffers(av_codec_ctx_video);
-	if (response < 0) {
-		UtilityFunctions::printerr("Can't seek video stream!");
-		av_frame_free(&av_frame);
-		av_packet_free(&av_packet);
-	}
-
-	while (true) {
-		
-		// Demux packet
-		response = av_read_frame(av_format_ctx, av_packet);
-		if (response != 0)
-			break;
-		if (av_packet->stream_index != av_stream_video->index) {
-			av_packet_unref(av_packet);
-			continue;
-		}
-
-		// Send packet for decoding
-		response = avcodec_send_packet(av_codec_ctx_video, av_packet);
-		av_packet_unref(av_packet);
-		if (response != 0)
-			break;
-
-		// Valid packet found, decode frame
-		while (true) {
-			
-			// Receive all frames
-			response = avcodec_receive_frame(av_codec_ctx_video, av_frame);
-			if (response != 0) {
-				av_frame_unref(av_frame);
-				break;
-			}
-
-			// Get frame pts
-			current_pts = av_frame->best_effort_timestamp == AV_NOPTS_VALUE ? av_frame->pts : av_frame->best_effort_timestamp;
-			if (current_pts == AV_NOPTS_VALUE) {
-				av_frame_unref(av_frame);
-				continue;
-			}
-
-			// Skip to actual requested frame
-			if ((long)(current_pts * stream_time_base_video) / 10000 < frame_timestamp / 10000) {
-				av_frame_unref(av_frame);
-				continue;
-			}
-
-			total_frame_number++;
-		} 
-	}
 }
