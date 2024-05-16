@@ -22,7 +22,7 @@ var fast_forward: bool = false
 
 var variable_frame_rate: bool = false
 
-var thread: Thread = Thread.new()
+var task_id: int = -1
 
 
 
@@ -38,9 +38,11 @@ func _ready() -> void:
 func on_video_drop(a_files: PackedStringArray) -> void:
 	$LoadingLabel.visible = true
 	video = Video.new()
-	thread.start(video.open_video.bind(a_files[0]))
-	#video.open_video(a_files[0])
-	#after_video_open()
+	task_id = WorkerThreadPool.add_task(video.open_video.bind(a_files[0]))
+
+
+func open_video(a_file: String) -> void:
+	video.open_video(a_file)
 
 
 func after_video_open() -> void:
@@ -49,7 +51,7 @@ func after_video_open() -> void:
 	framerate = video.get_framerate()
 	max_frame = video.get_total_frame_nr()
 	frame_time = 1.0 / framerate
-	
+
 	seek_frame(1)
 	variable_frame_rate = video.is_framerate_variable()
 	$VBox/Timeline.max_value = max_frame
@@ -63,16 +65,17 @@ func is_video_open() -> bool:
 
 
 func _process(a_delta: float) -> void:
-	if thread.is_started() and is_video_open():
-		thread.wait_to_finish()
-		after_video_open()
-	elif thread.is_started() and !thread.is_alive():
-		print("Could not load video!!")
-		$LoadingLabel.visible = true
-		thread.wait_to_finish()
+	if task_id != -1 and WorkerThreadPool.is_task_completed(task_id):
+		WorkerThreadPool.wait_for_task_completion(task_id)
+		task_id = -1
+		$LoadingLabel.visible = false
+		if is_video_open():
+			after_video_open()
+		else:
+			printerr("Couldn't open video!")
 	elif !is_video_open():
 		return
-
+	
 	if is_playing:
 		time_elapsed += a_delta
 		if time_elapsed < frame_time:

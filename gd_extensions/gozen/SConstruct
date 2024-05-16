@@ -52,6 +52,6 @@ if platform == 'windows':
 
 src = Glob('src/*.cpp')
 libpath = 'libgozen{}{}'.format(env['suffix'], env['SHLIBSUFFIX'])
-sharedlib = env.SharedLibrary(libpath, src)
+sharedlib = env.SharedLibrary(libpath, src, CPPFLAGS=['-g'])
 
 Default(sharedlib)
