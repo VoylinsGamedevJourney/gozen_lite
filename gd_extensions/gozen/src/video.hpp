@@ -21,79 +21,82 @@ extern "C" {
 using namespace godot;
 
 class Video : public Resource {
-  GDCLASS(Video, Resource);
+		GDCLASS(Video, Resource);
 
-private:
-  AVFormatContext *av_format_ctx = nullptr;
-  AVStream *av_stream_video = nullptr, *av_stream_audio = nullptr;
-  AVCodecContext *av_codec_ctx_video = nullptr;
+	private:
+		AVFormatContext *av_format_ctx = nullptr;
+		AVStream *av_stream_video = nullptr, *av_stream_audio = nullptr;
+		AVCodecContext *av_codec_ctx_video = nullptr;
 
-  AVFrame *av_frame = nullptr;
-  AVPacket *av_packet = nullptr;
+		AVFrame *av_frame = nullptr;
+		AVPacket *av_packet = nullptr;
 
-  struct SwsContext *sws_ctx = nullptr;
+		struct SwsContext *sws_ctx = nullptr;
 
-  PackedByteArray byte_array; // Only for video frames
+		PackedByteArray byte_array; // Only for video frames
 
-  int response = 0, src_linesize[4] = {0, 0, 0, 0}, total_frame_number = 0;
-  long start_time_video = 0, frame_timestamp = 0, current_pts = 0;
-  double average_frame_duration = 0, stream_time_base_video = 0;
+		int response = 0, src_linesize[4] = {0, 0, 0, 0}, total_frame_number = 0;
+		long start_time_video = 0, frame_timestamp = 0, current_pts = 0;
+		double average_frame_duration = 0, stream_time_base_video = 0;
 
-  Ref<AudioStreamWAV> audio = memnew(AudioStreamWAV);
+		Ref<AudioStreamWAV> audio = memnew(AudioStreamWAV);
 
-  bool is_open = false;
-  bool variable_framerate = false;
-  float frame_time = 0.0;
+		bool is_open = false;
+		bool variable_framerate = false;
+		float frame_time = 0.0;
 
-public:
-  Video() {}
-  ~Video() { close_video(); }
+	public:
+		Video() {}
+		~Video() { close_video(); }
 
-  void open_video(String a_path);
-  void close_video();
+		void open_video(String a_path);
+		void close_video();
 
-  inline bool is_video_open() { return is_open; }
+		inline bool is_video_open() { return is_open; }
 
-  Ref<Image> seek_frame(int a_frame_nr);
-  Ref<Image> next_frame();
+		Ref<Image> seek_frame(int a_frame_nr);
+		Ref<Image> next_frame();
 
-  inline Ref<AudioStreamWAV> get_audio() { return audio; };
-  void _get_audio();
+		inline Ref<AudioStreamWAV> get_audio() { return audio; };
+		void _get_audio();
 
-  inline float get_framerate() { return av_q2d(av_codec_ctx_video->framerate); }
-  inline float get_avg_framerate() {
-    return av_q2d(av_stream_video->avg_frame_rate);
-  }
+		inline float get_framerate() {
+				return av_q2d(av_codec_ctx_video->framerate);
+		}
+		inline float get_avg_framerate() {
+				return av_q2d(av_stream_video->avg_frame_rate);
+		}
 
-  inline bool is_framerate_variable() { return variable_framerate; }
-  inline float get_variable_frame_time() { return frame_time; }
+		inline bool is_framerate_variable() { return variable_framerate; }
+		inline float get_variable_frame_time() { return frame_time; }
 
-  inline int get_total_frame_nr() { return total_frame_number; };
+		inline int get_total_frame_nr() { return total_frame_number; };
 
-  void print_av_error(const char *a_message);
+		void print_av_error(const char *a_message);
 
-protected:
-  static inline void _bind_methods() {
-    ClassDB::bind_method(D_METHOD("open_video", "a_path"), &Video::open_video);
-    ClassDB::bind_method(D_METHOD("close_video"), &Video::close_video);
+	protected:
+		static inline void _bind_methods() {
+				ClassDB::bind_method(D_METHOD("open_video", "a_path"),
+														 &Video::open_video);
+				ClassDB::bind_method(D_METHOD("close_video"), &Video::close_video);
 
-    ClassDB::bind_method(D_METHOD("is_video_open"), &Video::is_video_open);
+				ClassDB::bind_method(D_METHOD("is_video_open"), &Video::is_video_open);
 
-    ClassDB::bind_method(D_METHOD("seek_frame", "a_frame_nr"),
-                         &Video::seek_frame);
-    ClassDB::bind_method(D_METHOD("next_frame"), &Video::next_frame);
-    ClassDB::bind_method(D_METHOD("get_audio"), &Video::get_audio);
+				ClassDB::bind_method(D_METHOD("seek_frame", "a_frame_nr"),
+														 &Video::seek_frame);
+				ClassDB::bind_method(D_METHOD("next_frame"), &Video::next_frame);
+				ClassDB::bind_method(D_METHOD("get_audio"), &Video::get_audio);
 
-    ClassDB::bind_method(D_METHOD("get_framerate"), &Video::get_framerate);
-    ClassDB::bind_method(D_METHOD("get_avg_framerate"),
-                         &Video::get_avg_framerate);
-    ClassDB::bind_method(D_METHOD("is_framerate_variable"),
-                         &Video::is_framerate_variable);
+				ClassDB::bind_method(D_METHOD("get_framerate"), &Video::get_framerate);
+				ClassDB::bind_method(D_METHOD("get_avg_framerate"),
+														 &Video::get_avg_framerate);
+				ClassDB::bind_method(D_METHOD("is_framerate_variable"),
+														 &Video::is_framerate_variable);
 
-    ClassDB::bind_method(D_METHOD("get_variable_frame_time"),
-                         &Video::get_variable_frame_time);
+				ClassDB::bind_method(D_METHOD("get_variable_frame_time"),
+														 &Video::get_variable_frame_time);
 
-    ClassDB::bind_method(D_METHOD("get_total_frame_nr"),
-                         &Video::get_total_frame_nr);
-  }
+				ClassDB::bind_method(D_METHOD("get_total_frame_nr"),
+														 &Video::get_total_frame_nr);
+		}
 };
