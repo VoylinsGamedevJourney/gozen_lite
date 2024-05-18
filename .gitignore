@@ -28,3 +28,4 @@ test_footage/
 exports/
 
 .cache
+.clang-format

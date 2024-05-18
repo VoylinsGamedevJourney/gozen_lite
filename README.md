@@ -1,11 +1,14 @@
-# Gozen Lite
+# GoZen Lite
 
-Video player in Godot with FFmpeg
+A video player made in Godot with FFmpeg.
 
-## Part 1
+## Under construction
 
-In part 1 of the tutorial series we only setup the project structure and the basic layout inside of the Godot project. We also created a git repository.
+This is part of my video editor called GoZen, which is also under construction. This repo is mainly for testing the FFmpeg implementation and to get the whole GoZen core working.
 
-## Part 2
+## Future of GoZen Lite
 
-In part 2 we set-up the GDExtension and created a basic class which we can access from Godot.
+The future of this project is to become a very very, extremely simple non-linear video editor. Even though I say extremely simple, this does not mean it will be very easy. Video editors stay quite complicated. ^^"
+
+GoZen's future is to be the go to video editor (especially on Linux) and will have modularity, better user interface, more customization, ... basically for an actual video editor you would want to use, the main GoZen project may be better.
+
