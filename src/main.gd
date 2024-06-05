@@ -51,7 +51,6 @@ func after_video_open() -> void:
 	framerate = video.get_framerate()
 	max_frame = video.get_total_frame_nr()
 	frame_time = 1.0 / framerate
-
 	seek_frame(1)
 	variable_frame_rate = video.is_framerate_variable()
 	$VBox/Timeline.max_value = max_frame
@@ -85,7 +84,7 @@ func _process(a_delta: float) -> void:
 			time_elapsed -= frame_time
 			current_frame += 1
 		
-		if current_frame >= max_frame:
+		if current_frame > max_frame + 50:
 			if dragging:
 				return
 			is_playing = !is_playing
@@ -106,7 +105,8 @@ func _process(a_delta: float) -> void:
 func seek_frame(a_frame_nr: int) -> void:
 	if !is_video_open():
 		return
-	current_frame = clampi(a_frame_nr, 1, max_frame - 1)
+	#current_frame = clampi(a_frame_nr, 1, max_frame - 1)
+	current_frame = a_frame_nr
 	if !is_playing:
 		$AudioStream1.set_stream_paused(false)
 	$AudioStream1.seek(current_frame/framerate)

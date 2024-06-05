@@ -11,11 +11,11 @@ config_version=5
 [application]
 
 config/name="GoZen Lite"
-config/description="Video player"
-config/version="2024.04.14"
+config/description="Very basic video player"
+config/version="2024.06.05"
 run/main_scene="res://main.tscn"
 config/use_custom_user_dir=true
-config/custom_user_dir_name="gozen_lites"
+config/custom_user_dir_name="gozen_lite"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 run/flush_stdout_on_print=true
 config/icon="res://icon.svg"
