@@ -1,14 +1,6 @@
 # GoZen Lite
 
-A video player made in Godot with FFmpeg.
+GoZen Lite is a video player made in Godot together with the [GoZen GDExtension](https://github.com/VoylinsGamedevJourney/GoZen_gdextension). The goal of this lite version of GoZen is to serve as a type of test room for the full GoZen version. This does not mean that GoZen Lite won't be useable. My goal for GoZen lite is to become a very lightweight and minimal video editor which can run on nearly all hardware. The biggest difference between this version and the full version will be that this version won't be able to be extended with plugins/modules and the full version will be.
 
-## Under construction
-
-This is part of my video editor called GoZen, which is also under construction. This repo is mainly for testing the FFmpeg implementation and to get the whole GoZen core working.
-
-## Future of GoZen Lite
-
-The future of this project is to become a very very, extremely simple non-linear video editor. Even though I say extremely simple, this does not mean it will be very easy. Video editors stay quite complicated. ^^"
-
-GoZen's future is to be the go to video editor (especially on Linux) and will have modularity, better user interface, more customization, ... basically for an actual video editor you would want to use, the main GoZen project may be better.
+To stay up to date of the progress on GoZen Lite check out [this issue](https://github.com/VoylinsGamedevJourney/GoZen_GDExtension/issues/1).
 
