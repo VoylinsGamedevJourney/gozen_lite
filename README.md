@@ -4,3 +4,7 @@ GoZen Lite is a video player made in Godot together with the [GoZen GDExtension]
 
 To stay up to date of the progress on GoZen Lite check out [this issue](https://github.com/VoylinsGamedevJourney/GoZen_GDExtension/issues/1).
 
+## Setting up the project
+
+First of all create a folder in the main project folder called `gde_gozen` and copy the bin files from [GoZen GDExtension](https://github.com/VoylinsGamedevJourney/GoZen_gdextension) into that folder. If something does not work check if the paths line up in the gozen.gdextension file. 
+

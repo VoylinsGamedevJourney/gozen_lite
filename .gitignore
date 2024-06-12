@@ -3,3 +3,5 @@
 .import/
 *.translation
 
+# GDE
+gde_gozen
