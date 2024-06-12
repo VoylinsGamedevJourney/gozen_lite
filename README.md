@@ -8,3 +8,5 @@ To stay up to date of the progress on GoZen Lite check out [this issue](https://
 
 First of all create a folder in the main project folder called `gde_gozen` and copy the bin files from [GoZen GDExtension](https://github.com/VoylinsGamedevJourney/GoZen_gdextension) into that folder. If something does not work check if the paths line up in the gozen.gdextension file. 
 
+After that we will also need a folder called `gde_data_manager` and copy the bin files from [gde_data_manager repo](https://github.com/VoylinsGamedevJourney/gde_data_manager) inside of that folder. Same as for the GoZen gde, check if the paths line up with the paths inside of the data_manager.gdextension file.
+
