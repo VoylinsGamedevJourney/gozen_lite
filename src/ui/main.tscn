@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3 uid="uid://bcrotmrvepics"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_uwbs4"]
+[ext_resource type="Script" path="res://scripts/menu_bar.gd" id="2_8dkfa"]
+
+[node name="Main" type="MarginContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_uwbs4")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="MenuBar" type="MenuBar" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+flat = true
+script = ExtResource("2_8dkfa")
