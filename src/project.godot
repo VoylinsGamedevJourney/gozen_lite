@@ -13,7 +13,7 @@ config_version=5
 config/name="GoZen Lite"
 config/description="Very basic video player"
 config/version="2024.06.05"
-run/main_scene="res://main.tscn"
+run/main_scene="res://ui/main.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="gozen_lite"
 config/features=PackedStringArray("4.2", "GL Compatibility")
@@ -36,6 +36,10 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/size/mode=2
 
+[gui]
+
+theme/custom="res://theme.tres"
+
 [input]
 
 project_save={
@@ -43,9 +47,19 @@ project_save={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":true,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":83,"key_label":0,"unicode":115,"echo":false,"script":null)
 ]
 }
+project_new_save={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":true,"ctrl_pressed":true,"meta_pressed":false,"pressed":false,"keycode":83,"physical_keycode":83,"key_label":83,"unicode":83,"echo":false,"script":null)
+]
+}
+project_open={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":true,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":79,"key_label":0,"unicode":111,"echo":false,"script":null)
+]
+}
 
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-environment/defaults/default_clear_color=Color(0, 0, 0, 1)
+environment/defaults/default_clear_color=Color(0.125, 0.125, 0.125, 1)
