@@ -2,9 +2,13 @@
 
 [resource]
 HBoxContainer/constants/separation = 3
-MarginContainer/constants/margin_bottom = 3
-MarginContainer/constants/margin_left = 3
-MarginContainer/constants/margin_right = 3
-MarginContainer/constants/margin_top = 3
+HSplitContainer/constants/minimum_grab_thickness = 3
+HSplitContainer/constants/separation = 3
+MarginContainer/constants/margin_bottom = 6
+MarginContainer/constants/margin_left = 6
+MarginContainer/constants/margin_right = 6
+MarginContainer/constants/margin_top = 6
 MenuBar/constants/h_separation = 10
 VBoxContainer/constants/separation = 3
+VSplitContainer/constants/minimum_grab_thickness = 3
+VSplitContainer/constants/separation = 3
