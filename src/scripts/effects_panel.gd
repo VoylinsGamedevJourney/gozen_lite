@@ -1,11 +1,17 @@
-extends PanelContainer
+class_name EffectsPanel extends PanelContainer
 
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
+# We want file effects and clip effects, so we will need to change the content
+# of this panel depending on what has been selected
+
+static var instance: EffectsPanel
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	pass
+func _ready() -> void:
+	instance = self
+
+
+static func show_file_effects(a_file_id: int) -> void:
+	# Already connected to file buttons!
+	print(a_file_id)
+
