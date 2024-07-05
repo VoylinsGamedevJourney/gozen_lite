@@ -28,7 +28,6 @@ func add_file(a_file_id: int, a_file: File) -> void:
 	l_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	l_button.pressed.connect(EffectsPanel.show_file_effects.bind(a_file_id))
 	l_button.set_script(preload("res://scripts/classes/draggable.gd"))
-	l_button.type = Draggable.FILE
 
 	match a_file.type:
 		File.VIDEO: current_tab = get_node("VideoFiles").get_index()
