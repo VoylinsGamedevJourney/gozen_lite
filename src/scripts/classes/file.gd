@@ -24,6 +24,7 @@ const IMAGE_EXT: PackedStringArray = ["png","jpg","svg","webp","bmp","tga","dds"
 # Default
 var type: int = -1
 var nickname: String = ""
+var duration: int = 10 # duration in frames
 #var master_shader # TODO: Add system
 
 
@@ -49,6 +50,7 @@ static func create_file(a_file_path: String) -> File:
 		l_file.type = AUDIO
 	elif l_ext in IMAGE_EXT:
 		l_file.type = IMAGE
+		l_file.duration = Settings.duration_image
 	else:
 		l_file.type = ERROR
 		return l_file
@@ -70,6 +72,7 @@ static func create_color_file(a_color: Color) -> File:
 	var l_file: File = File.new()
 	l_file.type = COLOR
 	l_file.color = a_color
+	l_file.duration = Settings.duration_color
 	return l_file
 
 
@@ -77,6 +80,7 @@ static func create_text_file(a_text: String) -> File:
 	var l_file: File = File.new()
 	l_file.type = TEXT
 	l_file.text = a_text
+	l_file.duration = Settings.duration_text
 	return l_file
 
 
@@ -84,5 +88,6 @@ static func create_gradient_file(a_gradient: GradientTexture2D) -> File:
 	var l_file: File = File.new()
 	l_file.type = GRADIENT
 	l_file.gradient = a_gradient
+	l_file.duration = Settings.duration_gradient
 	return l_file
 
