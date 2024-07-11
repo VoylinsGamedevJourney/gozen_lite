@@ -1,5 +1,4 @@
 extends TabContainer
-# ColorFiles contains both colors and gradients
 
 
 
@@ -7,6 +6,18 @@ func _ready() -> void:
 	File.create_file("test.mp4")
 	Project._on_project_loaded.connect(_on_project_loaded)
 	Project._on_file_added.connect(_on_file_added)
+	# Add icons
+	set_tab_icon(0, preload("res://icons/video_file.png"))
+	set_tab_icon(1, preload("res://icons/audio_file.png"))
+	set_tab_icon(2, preload("res://icons/image_file.png"))
+	set_tab_icon(3, preload("res://icons/text_file.png"))
+	set_tab_icon(4, preload("res://icons/color_file.png"))
+	# Set texts
+	set_tab_title(0, "")
+	set_tab_title(1, "")
+	set_tab_title(2, "")
+	set_tab_title(3, "")
+	set_tab_title(4, "")
 
 
 func _on_project_loaded() -> void:

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cnmcxoy57tr0"
-path="res://.godot/imported/play_arrow_48dp_FILL1_wght400_GRAD0_opsz48.png-7d6043434626e9ea3a54dbc4fc10eace.ctex"
+uid="uid://btra37v3dtjr4"
+path="res://.godot/imported/lock.png-71ece42e471842f5effc2888d94dd8ed.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://icons/play_arrow_48dp_FILL1_wght400_GRAD0_opsz48.png"
-dest_files=["res://.godot/imported/play_arrow_48dp_FILL1_wght400_GRAD0_opsz48.png-7d6043434626e9ea3a54dbc4fc10eace.ctex"]
+source_file="res://icons/lock.png"
+dest_files=["res://.godot/imported/lock.png-71ece42e471842f5effc2888d94dd8ed.ctex"]
 
 [params]
 

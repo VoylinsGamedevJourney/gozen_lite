@@ -76,6 +76,7 @@ func add_new_clip(a_clip_id: int) -> void:
 	l_clip.add_theme_stylebox_override("panel", preload("res://resources/clip.tres"))
 	l_label.text = Project.file_data[Project.clips[a_clip_id].file_id].nickname
 	l_label.clip_text = true
+	l_label.add_theme_font_size_override("font_size", 10)
 	l_label.tooltip_text = Project.file_data[Project.clips[a_clip_id].file_id].nickname
 	l_clip.add_child(l_label)
 	add_child(l_clip)

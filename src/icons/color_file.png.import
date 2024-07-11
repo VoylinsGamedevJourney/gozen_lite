@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dms0pea5t8h7e"
-path="res://.godot/imported/fast_rewind_48dp_FILL1_wght400_GRAD0_opsz48.png-41d65d1d4af444f8b18b6e69fe915338.ctex"
+uid="uid://h03ggqh6g6e"
+path="res://.godot/imported/color_file.png-2f026893cbf4a582c718cddabed721ed.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://icons/fast_rewind_48dp_FILL1_wght400_GRAD0_opsz48.png"
-dest_files=["res://.godot/imported/fast_rewind_48dp_FILL1_wght400_GRAD0_opsz48.png-41d65d1d4af444f8b18b6e69fe915338.ctex"]
+source_file="res://icons/color_file.png"
+dest_files=["res://.godot/imported/color_file.png-2f026893cbf4a582c718cddabed721ed.ctex"]
 
 [params]
 
