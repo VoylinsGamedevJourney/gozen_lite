@@ -1,4 +1,26 @@
-[gd_resource type="Theme" format=3 uid="uid://ya2f4viw74hs"]
+[gd_resource type="Theme" load_steps=3 format=3 uid="uid://ya2f4viw74hs"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lpt85"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.14902, 0.141176, 0.145098, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7lheq"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.14902, 0.141176, 0.145098, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [resource]
 HBoxContainer/constants/separation = 3
@@ -9,8 +31,10 @@ MarginContainer/constants/margin_left = 6
 MarginContainer/constants/margin_right = 6
 MarginContainer/constants/margin_top = 6
 MenuBar/constants/h_separation = 10
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_lpt85")
 TabContainer/constants/icon_max_width = 24
 TabContainer/constants/side_margin = 0
+TabContainer/styles/panel = SubResource("StyleBoxFlat_7lheq")
 VBoxContainer/constants/separation = 3
 VSplitContainer/constants/minimum_grab_thickness = 3
 VSplitContainer/constants/separation = 3
