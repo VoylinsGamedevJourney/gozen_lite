@@ -1,17 +1,32 @@
-[gd_scene load_steps=10 format=3 uid="uid://bcrotmrvepics"]
+[gd_scene load_steps=16 format=3 uid="uid://bcrotmrvepics"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_uwbs4"]
 [ext_resource type="Script" path="res://scripts/menu_bar.gd" id="2_8dkfa"]
 [ext_resource type="Script" path="res://scripts/media_tree.gd" id="3_t053p"]
+[ext_resource type="Texture2D" uid="uid://bw4kjhoxomxjv" path="res://icons/note_add.png" id="4_rlmfp"]
 [ext_resource type="Script" path="res://scripts/view_panel.gd" id="4_xvncw"]
 [ext_resource type="Script" path="res://scripts/effects_panel.gd" id="5_0twrt"]
+[ext_resource type="Texture2D" uid="uid://bho4jh0fj5vtj" path="res://icons/fast_rewind.png" id="6_0v3u7"]
 [ext_resource type="Script" path="res://scripts/timeline.gd" id="6_7w0ww"]
-[ext_resource type="Script" path="res://scripts/audio_meter_panel.gd" id="7_ofs4e"]
+[ext_resource type="Texture2D" uid="uid://dlacvk44n7sof" path="res://icons/play_arrow.png" id="7_3ufo4"]
+[ext_resource type="Texture2D" uid="uid://x1t6mpi0of53" path="res://icons/fast_forward.png" id="8_f25q7"]
+[ext_resource type="Texture2D" uid="uid://cbw4dhih25o8d" path="res://icons/effect.png" id="10_yomit"]
 
-[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_b0tew"]
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_ylb7a"]
+size = Vector2(1920, 1080)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lyqci"]
+bg_color = Color(0.109422, 0.109422, 0.109422, 1)
+corner_radius_top_left = 10
+corner_radius_bottom_left = 10
+expand_margin_left = 5.0
+expand_margin_top = 5.0
+expand_margin_bottom = 5.0
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4xjyq"]
 content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_41ac2"]
 
 [node name="Main" type="MarginContainer"]
 anchors_preset = 15
@@ -50,6 +65,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+tab_alignment = 1
 script = ExtResource("3_t053p")
 
 [node name="VideoFiles" type="ScrollContainer" parent="VBoxContainer/MainVSplit/MainHSplit/MediaVBox/MediaPanel"]
@@ -102,17 +118,26 @@ layout_mode = 2
 [node name="AddFilesButton" type="Button" parent="VBoxContainer/MainVSplit/MainHSplit/MediaVBox/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Add files"
+theme_override_constants/icon_max_width = 20
+text = "File(s)"
+icon = ExtResource("4_rlmfp")
+expand_icon = true
 
 [node name="AddTitleButton" type="Button" parent="VBoxContainer/MainVSplit/MainHSplit/MediaVBox/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Add title"
+theme_override_constants/icon_max_width = 20
+text = "Title"
+icon = ExtResource("4_rlmfp")
+expand_icon = true
 
 [node name="AddColorButton" type="Button" parent="VBoxContainer/MainVSplit/MainHSplit/MediaVBox/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Add color"
+theme_override_constants/icon_max_width = 20
+text = "Color"
+icon = ExtResource("4_rlmfp")
+expand_icon = true
 
 [node name="SecondaryHSplit" type="HSplitContainer" parent="VBoxContainer/MainVSplit/MainHSplit"]
 layout_mode = 2
@@ -125,16 +150,22 @@ layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("4_xvncw")
 
+[node name="ViewControl" type="Control" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel"]
+layout_mode = 2
+
 [node name="VBox" type="VBoxContainer" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel"]
 layout_mode = 2
 
-[node name="TextureRect" type="TextureRect" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox"]
+[node name="ViewPanelRect" type="TextureRect" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
-texture = SubResource("PlaceholderTexture2D_b0tew")
+texture = SubResource("PlaceholderTexture2D_ylb7a")
+expand_mode = 5
+stretch_mode = 5
 
 [node name="HBox" type="HBoxContainer" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 20
 alignment = 1
 
 [node name="TimeLabel" type="Label" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox"]
@@ -148,27 +179,30 @@ vertical_alignment = 1
 layout_mode = 2
 
 [node name="RewindButton" type="Button" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox"]
+custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
-text = "Rewind"
+icon = ExtResource("6_0v3u7")
+flat = true
+expand_icon = true
 
 [node name="PlayPauseButton" type="Button" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox"]
+custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
-text = "Play/Pause"
+icon = ExtResource("7_3ufo4")
+flat = true
+expand_icon = true
 
 [node name="ForwardButton" type="Button" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox"]
+custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
-text = "Forward"
+icon = ExtResource("8_f25q7")
+flat = true
+expand_icon = true
 
-[node name="AudioMeterPanel" type="PanelContainer" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox"]
-custom_minimum_size = Vector2(70, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-script = ExtResource("7_ofs4e")
-
-[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/AudioMeterPanel"]
+[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox"]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 3
 size_flags_vertical = 1
 fill_mode = 3
 
@@ -177,7 +211,7 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/TimelinePreviewPanel"]
 layout_mode = 2
-text = "TimelinePeview"
+text = "TimelinePreview"
 horizontal_alignment = 1
 
 [node name="EffectsPanel" type="PanelContainer" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit"]
@@ -189,55 +223,84 @@ script = ExtResource("5_0twrt")
 [node name="EffectsVBox" type="VBoxContainer" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/EffectsPanel"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/EffectsPanel/EffectsVBox"]
+[node name="HBox" type="HBoxContainer" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/EffectsPanel/EffectsVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TextureRect" type="TextureRect" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/EffectsPanel/EffectsVBox/HBox"]
+layout_mode = 2
+texture = ExtResource("10_yomit")
+expand_mode = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/EffectsPanel/EffectsVBox/HBox"]
 layout_mode = 2
 text = "Effects Panel"
 
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/EffectsPanel/EffectsVBox"]
 layout_mode = 2
 
-[node name="BottomHSplit" type="HSplitContainer" parent="VBoxContainer/MainVSplit"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="TimelinePanel" type="PanelContainer" parent="VBoxContainer/MainVSplit/BottomHSplit"]
+[node name="TimelinePanel" type="PanelContainer" parent="VBoxContainer/MainVSplit"]
 unique_name_in_owner = true
+clip_children = 2
 custom_minimum_size = Vector2(200, 200)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("6_7w0ww")
 
-[node name="HBox" type="HBoxContainer" parent="VBoxContainer/MainVSplit/BottomHSplit/TimelinePanel"]
+[node name="HBox" type="HBoxContainer" parent="VBoxContainer/MainVSplit/TimelinePanel"]
 layout_mode = 2
+theme_override_constants/separation = 0
 
-[node name="SidePanel" type="PanelContainer" parent="VBoxContainer/MainVSplit/BottomHSplit/TimelinePanel/HBox"]
-custom_minimum_size = Vector2(130, 0)
+[node name="SidePanel" type="PanelContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox"]
 layout_mode = 2
 size_flags_horizontal = 0
-size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_lyqci")
 
-[node name="SideScrollContainer" type="ScrollContainer" parent="VBoxContainer/MainVSplit/BottomHSplit/TimelinePanel/HBox/SidePanel"]
+[node name="SideScrollContainer" type="ScrollContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox/SidePanel"]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_4xjyq")
 horizontal_scroll_mode = 0
 
-[node name="TimelineSideVBox" type="VBoxContainer" parent="VBoxContainer/MainVSplit/BottomHSplit/TimelinePanel/HBox/SidePanel/SideScrollContainer"]
+[node name="TimelineSideVBox" type="VBoxContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox/SidePanel/SideScrollContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 0
 
-[node name="MainScrollContainer" type="ScrollContainer" parent="VBoxContainer/MainVSplit/BottomHSplit/TimelinePanel/HBox"]
+[node name="MainTimelineScroll" type="ScrollContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="TimelineMainVBox" type="VBoxContainer" parent="VBoxContainer/MainVSplit/BottomHSplit/TimelinePanel/HBox/MainScrollContainer"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(800, 0)
+[node name="TimelineMain" type="Control" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll"]
+custom_minimum_size = Vector2(8000, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+
+[node name="TimelineMainVBox" type="VBoxContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll/TimelineMain"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 0
+
+[node name="Playhead" type="Panel" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll/TimelineMain"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 3.0
+offset_bottom = 2000.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_41ac2")
+
+[connection signal="pressed" from="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox/RewindButton" to="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel" method="_on_rewind_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox/PlayPauseButton" to="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel" method="_on_play_pause_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox/ForwardButton" to="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel" method="_on_forward_button_pressed"]
+[connection signal="gui_input" from="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll/TimelineMain/TimelineMainVBox" to="VBoxContainer/MainVSplit/TimelinePanel" method="_on_timeline_main_v_box_gui_input"]
