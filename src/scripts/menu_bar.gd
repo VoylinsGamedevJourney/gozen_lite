@@ -22,7 +22,8 @@ func _ready() -> void:
 	menu[PROJECT].add_separator()
 	menu[PROJECT].add_item("Render project (Ctrl+Enter)")
 	menu[PROJECT].add_separator()
-	menu[PROJECT].add_item("Close editor (Ctrl+Q")
+	menu[PROJECT].add_item("Close editor (Ctrl+Q)")
+	menu[PROJECT].id_pressed.connect(_on_menu_project_id_pressed)
 
 	# Setting up Tools popup
 	menu[TOOLS].add_item("Settings")
@@ -40,3 +41,25 @@ func add_main_menu(a_name: String) -> void:
 	l_popup.name = a_name
 	menu.append(l_popup)
 	add_child(l_popup)
+
+
+func _on_menu_project_id_pressed(a_id: int) -> void:
+	match a_id:
+		0: # New project
+			Project.reset()
+		1: # Open project
+			Project.open_project()
+		2: # Open recent project
+			print("Not implemented yet!")
+			pass # TODO: Make a submenu popup show with the 10 most recent projects
+		4: # Save project
+			Project.save_project(Project._path)
+		5: # Save project as ...
+			Project.save_project()
+		7: # Render project
+			print("Not implemented yet!")
+			pass # TODO: Show render menu	
+		9: # Quit editor
+			# TODO: Check for changes and save them if needed
+			get_tree().quit()
+
