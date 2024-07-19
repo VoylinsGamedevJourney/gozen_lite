@@ -1,21 +1,45 @@
-class_name Track extends Control
+class_name Track extends Panel
+
+# TODO: Set size of a frame in pixels so placing clips is accurate 
+# TODO: Track scaling when scale signal has been emitted.
 
 
-var snap_limit: int = 50
+var snap_limit: int = 20:
+	get: return roundi(snap_limit * Timeline.timeline_scale)
 var preview: PanelContainer = null
 
+var _track_range: PackedInt64Array = []
 
 
 func _ready() -> void:
-	# Creating preview panel
-	preview = PanelContainer.new()
-	preview.visible = false
-	preview.size.y = 20
-	preview.mouse_filter = Control.MOUSE_FILTER_PASS
-	preview.add_theme_stylebox_override("panel", preload("res://resources/clip_preview.tres"))
-	add_child(preview)
+	Timeline.instance._scale_changed.connect(adjust_scaling)	
 	mouse_exited.connect(remove_preview)
+
+	# Creating preview panel
+	preview = preload("res://resources/clip_preview.tscn").instantiate()
+	preview.visible = false
+	preview.size.y = size.y
+	add_child(preview)
+
+
+func _on_project_loaded() -> void:
+	_track_range.clear()
+	for l_clip_id: int in Project.tracks[get_index()]:
+		add_clip_timedata(Project.clips[l_clip_id])
+
+
+func add_clip_timedata(a_clip: Clip) -> void:
+	_track_range.append_array(range(
+		a_clip.timeline_start, a_clip.timeline_start + a_clip.duration))
 	
+
+
+func adjust_scaling() -> void: 
+	for l_clip: PanelContainer in get_children():
+		if not l_clip.name.contains('@'): # Preview container
+			l_clip.size.x = Project.clips[l_clip.name.to_int()].duration * Timeline.timeline_scale
+			l_clip.position.x = Project.clips[l_clip.name.to_int()].timeline_start * Timeline.timeline_scale
+
 
 func _can_drop_data(a_position: Vector2, a_data: Variant, a_video_extra: bool = false) -> bool:
 	if typeof(a_data) == TYPE_INT:
@@ -33,7 +57,7 @@ func _can_drop_data(a_position: Vector2, a_data: Variant, a_video_extra: bool = 
 		if l_offset == -100:
 			remove_preview()
 			return false
-		preview.size.x = l_duration
+		preview.size.x = l_duration * Timeline.timeline_scale
 		set_preview(a_position.x + l_offset)
 		return true
 	remove_preview()
@@ -42,7 +66,7 @@ func _can_drop_data(a_position: Vector2, a_data: Variant, a_video_extra: bool = 
 
 func _to_fit_or_not_to_fit(a_range: Array) -> bool: # returns spaces of adjustment needed if to fit
 	for l_range_i: int in a_range:
-		if l_range_i in Project._track_data[get_index()]:
+		if l_range_i in _track_range: #Project._track_data[get_index()]:
 			return false
 	return true
 
@@ -67,17 +91,14 @@ func _drop_data(a_position: Vector2, a_data: Variant) -> void:
 
 
 func add_new_clip(a_clip_id: int) -> void:
-	var l_clip: PanelContainer = PanelContainer.new()
-	var l_label: Label = Label.new()
+	var l_clip: PanelContainer = preload("res://resources/clip.tscn").instantiate()
+	l_clip.set_clip_properties(a_clip_id)
 	l_clip.position.x = Project.clips[a_clip_id].timeline_start
-	l_clip.size.y = 20
-	l_clip.size.x = Project.clips[a_clip_id].duration
+	l_clip.size.x = Project.clips[a_clip_id].duration * Timeline.timeline_scale
+	l_clip.size.y = size.y
 	l_clip.mouse_filter = Control.MOUSE_FILTER_PASS
-	l_clip.add_theme_stylebox_override("panel", preload("res://resources/clip.tres"))
-	l_label.text = Project.file_data[Project.clips[a_clip_id].file_id].nickname
-	l_label.clip_text = true
-	l_label.add_theme_font_size_override("font_size", 10)
-	l_label.tooltip_text = Project.file_data[Project.clips[a_clip_id].file_id].nickname
-	l_clip.add_child(l_label)
+
 	add_child(l_clip)
+	l_clip.name = str(a_clip_id)
+	add_clip_timedata(Project.clips[a_clip_id])
 

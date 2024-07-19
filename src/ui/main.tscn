@@ -12,8 +12,8 @@
 [ext_resource type="Texture2D" uid="uid://x1t6mpi0of53" path="res://icons/fast_forward.png" id="8_f25q7"]
 [ext_resource type="Texture2D" uid="uid://cbw4dhih25o8d" path="res://icons/effect.png" id="10_yomit"]
 
-[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_ylb7a"]
-size = Vector2(1920, 1080)
+[sub_resource type="ViewportTexture" id="ViewportTexture_hxdk8"]
+viewport_path = NodePath("VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/SubViewportContainer/ViewSubViewport")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lyqci"]
 bg_color = Color(0.109422, 0.109422, 0.109422, 1)
@@ -27,6 +27,7 @@ expand_margin_bottom = 5.0
 content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_41ac2"]
+bg_color = Color(0.6, 0.6, 0.6, 0.556863)
 
 [node name="Main" type="MarginContainer"]
 anchors_preset = 15
@@ -150,18 +151,21 @@ layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("4_xvncw")
 
-[node name="ViewControl" type="Control" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel"]
-layout_mode = 2
-
 [node name="VBox" type="VBoxContainer" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel"]
 layout_mode = 2
 
-[node name="ViewPanelRect" type="TextureRect" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox"]
-unique_name_in_owner = true
+[node name="SubViewportContainer" type="TextureRect" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox"]
 layout_mode = 2
-texture = SubResource("PlaceholderTexture2D_ylb7a")
-expand_mode = 5
+size_flags_vertical = 3
+texture = SubResource("ViewportTexture_hxdk8")
+expand_mode = 2
 stretch_mode = 5
+
+[node name="ViewSubViewport" type="SubViewport" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/SubViewportContainer"]
+unique_name_in_owner = true
+handle_input_locally = false
+size = Vector2i(1920, 1080)
+render_target_update_mode = 4
 
 [node name="HBox" type="HBoxContainer" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox"]
 layout_mode = 2

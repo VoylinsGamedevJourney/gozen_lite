@@ -3,7 +3,6 @@ extends TabContainer
 
 
 func _ready() -> void:
-	File.create_file("test.mp4")
 	Project._on_project_loaded.connect(_on_project_loaded)
 	Project._on_file_added.connect(_on_file_added)
 	# Add icons

@@ -6,3 +6,6 @@
 # GDE
 gde_gozen
 gde_data_manager
+
+# Exports
+bin/
