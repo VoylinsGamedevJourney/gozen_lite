@@ -158,7 +158,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 3
 texture = SubResource("ViewportTexture_hxdk8")
-expand_mode = 2
+expand_mode = 5
 stretch_mode = 5
 
 [node name="ViewSubViewport" type="SubViewport" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/SubViewportContainer"]
