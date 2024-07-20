@@ -1,0 +1,23 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://43m3542vebal"]
+
+[ext_resource type="Shader" path="res://resources/master_shader.gdshader" id="1_873p2"]
+
+[resource]
+shader = ExtResource("1_873p2")
+shader_parameter/position = Vector2(0, 0)
+shader_parameter/rotation = 0.0
+shader_parameter/rotation_pivot_x = 0.5
+shader_parameter/rotation_pivot_y = 0.5
+shader_parameter/scale = 1.0
+shader_parameter/scale_pivot_x = 0.5
+shader_parameter/scale_pivot_y = 0.5
+shader_parameter/alpha = 1.0
+shader_parameter/blur = 0.0
+shader_parameter/brightness = 0.0
+shader_parameter/contrast = 1.0
+shader_parameter/saturation = 1.0
+shader_parameter/red_value = 1.0
+shader_parameter/green_value = 1.0
+shader_parameter/blue_value = 1.0
+shader_parameter/tint_color = Color(1, 1, 1, 1)
+shader_parameter/tint_effect_factor = 0.0

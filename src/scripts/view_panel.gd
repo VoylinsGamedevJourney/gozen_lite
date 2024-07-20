@@ -77,6 +77,7 @@ func add_view() -> void:
 	var l_id: int = views.size()
 	views.append(CanvasLayer.new())
 	views[l_id].add_child(TextureRect.new())
+	views[l_id].get_child(0).material = preload("res://resources/master_shader_material.tres") # Not certain if effects will be the same for all clips
 	%ViewSubViewport.add_child(views[l_id])
 	for l_canvas_id: int in views.size():
 		views[l_canvas_id].layer = l_id - l_canvas_id
