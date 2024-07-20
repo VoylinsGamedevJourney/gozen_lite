@@ -36,7 +36,7 @@ func add_clip_timedata(a_clip: Clip) -> void:
 
 func adjust_scaling() -> void: 
 	for l_clip: PanelContainer in get_children():
-		if not l_clip.name.contains('@'): # Preview container
+		if not l_clip.name.begins_with('_'): # Preview container
 			l_clip.size.x = Project.clips[l_clip.name.to_int()].duration * Timeline.timeline_scale
 			l_clip.position.x = Project.clips[l_clip.name.to_int()].timeline_start * Timeline.timeline_scale
 

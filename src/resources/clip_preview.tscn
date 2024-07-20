@@ -2,6 +2,6 @@
 
 [ext_resource type="StyleBox" uid="uid://vp5g4dpmf5k0" path="res://resources/clip_preview.tres" id="1_6vubd"]
 
-[node name="ClipPreview" type="PanelContainer"]
+[node name="_ClipPreview" type="PanelContainer"]
 mouse_filter = 1
 theme_override_styles/panel = ExtResource("1_6vubd")
