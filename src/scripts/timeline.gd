@@ -36,7 +36,7 @@ func _on_timeline_main_v_box_gui_input(a_event:InputEvent) -> void:
 			elif a_event.is_pressed():
 				is_dragging = true
 	
-
+	# TODO: Make the scroll of the timeline work according to where the mouse is located
 	if a_event.is_action_released("timeline_zoom_in", true):# and a_event.ctrl_pressed:
 		if timeline_scale_max > timeline_scale:
 			timeline_scale += 0.1
@@ -50,10 +50,6 @@ func _on_timeline_main_v_box_gui_input(a_event:InputEvent) -> void:
 func update_timeline() -> void:
 	%TimelineMainVBox.get_parent().size.x = Project.get_end_frame_timepoint() + 8000 * timeline_scale
 	_scale_changed.emit()
-	if %Playhead.position.x > 700:
-		%MainTimelineScroll.scroll_horizontal = %Playhead.position.x - 300
-	else:
-		%MainTimelineScroll.scroll_horizontal = %Playhead.position.x
 
 
 func load_defaults() -> void:
