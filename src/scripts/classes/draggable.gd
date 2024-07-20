@@ -4,5 +4,5 @@ class_name Draggable extends Node
 
 
 func _get_drag_data(_position: Vector2i) -> Variant:
-	return name.bin_to_int()
+	return name.to_int()
 
