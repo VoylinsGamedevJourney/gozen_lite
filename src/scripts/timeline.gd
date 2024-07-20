@@ -56,21 +56,23 @@ func load_defaults() -> void:
 	_reset()
 	for _i: int in Settings.default_tracks:
 		add_track()
-	
 
 
 func load_project() -> void:
 	_reset()
 	for _i: int in Project.tracks.size():
 		add_track()
+		%TimelineMainVBox.get_child(_i).load_project()
 
 
 func _reset() -> void:
 	for l_track: Control in %TimelineMainVBox.get_children():
 		if l_track.name != StringName("Playhead"):
-			l_track.queue_free()
+			l_track.free()
 	for l_header: PanelContainer in %TimelineSideVBox.get_children():
-		l_header.queue_free()
+		l_header.free()
+	# We need a certain amount of waiting time else it causes issues
+	await RenderingServer.frame_pre_draw
 
 
 func get_track_raw_data(a_id: int) -> PackedInt64Array:

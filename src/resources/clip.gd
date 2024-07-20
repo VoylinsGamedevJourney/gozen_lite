@@ -26,7 +26,6 @@ func set_clip_properties(a_clip_id: int) -> void:
 	position.x = Project.clips[a_clip_id].timeline_start
 	size.x = Project.clips[a_clip_id].duration * Timeline.timeline_scale
 	size.y = size.y
-	pass
 
 
 func set_label_text(a_text: String) -> void:

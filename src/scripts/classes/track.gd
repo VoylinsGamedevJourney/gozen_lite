@@ -22,10 +22,9 @@ func _ready() -> void:
 	add_child(preview)
 
 
-func _on_project_loaded() -> void:
-	_track_range.clear()
-	for l_clip_id: int in Project.tracks[get_index()]:
-		add_clip_timedata(Project.clips[l_clip_id])
+func load_project() -> void:
+	for l_clip_timestamp: int in Project.tracks[get_index()]:
+		add_new_clip(Project.tracks[get_index()][l_clip_timestamp])
 
 
 func add_clip_timedata(a_clip: Clip) -> void:
