@@ -13,6 +13,8 @@ var is_dragging: bool = false
 var views: Array[CanvasLayer] = []
 var current_clips: Array[Clip] = []
 
+var current_frame: int = -1
+
 
 
 func _ready() -> void:
@@ -91,20 +93,31 @@ func remove_view() -> void:
 
 
 func set_frame(a_frame_nr: int = get_current_frame_nr()) -> void:
+	if current_frame == a_frame_nr:
+		return
+	current_frame = a_frame_nr
 	for l_track_id: int in Project.tracks.size():
 		if a_frame_nr in Timeline.instance.get_track_raw_data(l_track_id):
 			# Check if clip is loaded
-			if current_clips[l_track_id] == null:
-				# Find which clip is there
+			if current_clips[l_track_id] == null: # Find which clip is there
 				current_clips[l_track_id] = get_clip_from_raw(l_track_id, a_frame_nr)
-		#	# Check if clip is expired
-		#	if current_clips[l_track_id].timeline_start + current_clips[l_track_id].duration >= a_frame_nr: 
-		#		print("Clip expired")
-		#		current_clips[l_track_id] = null 	
-			views[l_track_id].get_child(0).texture = current_clips[l_track_id].get_texture(a_frame_nr)
+				current_clips[l_track_id].current_frame = -1
+
+			var l_type: int = Project.file_data[current_clips[l_track_id].file_id].type
+			var l_image: Image
+			if l_type == File.VIDEO:
+				if current_clips[l_track_id].next_frame_available(a_frame_nr):
+					l_image = current_clips[l_track_id].get_video_frame(is_playing)
+					if l_image != null:
+						views[l_track_id].get_child(0).texture = ImageTexture.create_from_image(l_image)
+			elif l_type == File.IMAGE:
+				views[l_track_id].get_child(0).texture = ImageTexture.create_from_image(current_clips[l_track_id].get_image())
+			else:
+				print("Not implemented yet")
 		else:
 			# Clear previous frame
 			views[l_track_id].get_child(0).texture = null
+			current_clips[l_track_id] = null
 		
 
 func get_clip_from_raw(a_track_id: int, a_frame_nr: int) -> Clip:

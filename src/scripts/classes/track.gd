@@ -42,6 +42,7 @@ func adjust_scaling() -> void:
 
 func _can_drop_data(a_position: Vector2, a_data: Variant, a_video_extra: bool = false) -> bool:
 	if typeof(a_data) == TYPE_INT:
+		var l_type: int = Project.file_data[a_data].type
 		var l_duration: int = Project.file_data[a_data].duration
 		var l_offset: int = -100
 		for l_snap_offset: int in snap_limit:
@@ -56,7 +57,12 @@ func _can_drop_data(a_position: Vector2, a_data: Variant, a_video_extra: bool = 
 		if l_offset == -100:
 			remove_preview()
 			return false
-		preview.size.x = l_duration * Timeline.timeline_scale
+		if l_type == File.VIDEO:
+			preview.size.x = l_duration / Project._file_data[a_data].get_framerate() * Project.frame_rate * Timeline.timeline_scale
+		elif l_type == File.AUDIO:
+			preview.size.x = l_duration * Project.frame_rate * Timeline.timeline_scale
+		else:
+			preview.size.x = l_duration * Timeline.timeline_scale
 		set_preview(a_position.x + l_offset)
 		return true
 	remove_preview()
@@ -93,7 +99,7 @@ func add_new_clip(a_clip_id: int) -> void:
 	var l_clip: PanelContainer = preload("res://resources/clip.tscn").instantiate()
 	l_clip.set_clip_properties(a_clip_id)
 	l_clip.position.x = Project.clips[a_clip_id].timeline_start
-	l_clip.size.x = Project.clips[a_clip_id].duration * Timeline.timeline_scale
+	l_clip.size.x = preview.size.x
 	l_clip.size.y = size.y
 	l_clip.mouse_filter = Control.MOUSE_FILTER_PASS
 
