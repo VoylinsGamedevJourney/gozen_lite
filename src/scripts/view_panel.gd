@@ -10,7 +10,7 @@ var was_playing: bool = false
 var time_elapsed: float = 0.0
 var is_dragging: bool = false
 
-var views: Array[CanvasLayer] = []
+var views: Array[TextureRect] = []
 var current_clips: Array[Clip] = []
 
 var current_frame: int = -1
@@ -77,12 +77,9 @@ func _on_rewind_button_pressed():
 
 func add_view() -> void:
 	var l_id: int = views.size()
-	views.append(CanvasLayer.new())
-	views[l_id].add_child(TextureRect.new())
-	views[l_id].get_child(0).material = preload("res://resources/master_shader_material.tres") # Not certain if effects will be the same for all clips
-	%ViewSubViewport.add_child(views[l_id])
-	for l_canvas_id: int in views.size():
-		views[l_canvas_id].layer = l_id - l_canvas_id
+	views.append(TextureRect.new())
+	views[l_id].material = preload("res://resources/master_shader_material.tres") # Not certain if effects will be the same for all clips
+	%ViewSubViewport.add_child(views[l_id], 0)
 	current_clips.append(null)
 
 
@@ -102,21 +99,17 @@ func set_frame(a_frame_nr: int = get_current_frame_nr()) -> void:
 			if current_clips[l_track_id] == null: # Find which clip is there
 				current_clips[l_track_id] = get_clip_from_raw(l_track_id, a_frame_nr)
 				current_clips[l_track_id].current_frame = -1
-
 			var l_type: int = Project.file_data[current_clips[l_track_id].file_id].type
-			var l_image: Image
 			if l_type == File.VIDEO:
 				if current_clips[l_track_id].next_frame_available(a_frame_nr):
-					l_image = current_clips[l_track_id].get_video_frame(is_playing)
-					if l_image != null:
-						views[l_track_id].get_child(0).texture = ImageTexture.create_from_image(l_image)
+					views[l_track_id].texture = ImageTexture.create_from_image(current_clips[l_track_id].get_video_frame(is_playing))
 			elif l_type == File.IMAGE:
-				views[l_track_id].get_child(0).texture = ImageTexture.create_from_image(current_clips[l_track_id].get_image())
+				views[l_track_id].texture = ImageTexture.create_from_image(current_clips[l_track_id].get_image())
 			else:
 				print("Not implemented yet")
 		else:
 			# Clear previous frame
-			views[l_track_id].get_child(0).texture = null
+			views[l_track_id].texture = null
 			current_clips[l_track_id] = null
 		
 

@@ -22,7 +22,6 @@ func get_video_frame(a_is_playing: bool) -> Image:
 	if video_data == null:
 		video_data = Video.new()
 		video_data.open_video(Project.file_data[file_id].path, false)
-
 	if frame_skip < 0 or frame_skip > 8 or !a_is_playing:
 		video_frame_nr = current_frame
 		return video_data.seek_frame(current_frame)
@@ -39,30 +38,15 @@ func get_video_frame(a_is_playing: bool) -> Image:
 func next_frame_available(a_frame_nr: int) -> bool: # Only for video
 	current_frame = video_frame_conversion(a_frame_nr)
 	if current_frame != video_frame_nr:
-		if current_frame > video_frame_nr:
-			frame_skip = -1
-		else:
-			frame_skip =  current_frame - video_frame_nr
+		frame_skip = -1 if current_frame < video_frame_nr else current_frame - video_frame_nr
 		return true
 	frame_skip = -1
 	return false
 
 
-
 func get_texture(a_frame_nr: int) -> Texture:
 	match Project.file_data[file_id].type:
 		File.TEXT:
-			print("Not implemented yet!")
-		File.IMAGE:
-			return ImageTexture.create_from_image(Project._file_data[file_id])
-		File.VIDEO:
-			video_frame_nr = video_frame_conversion(a_frame_nr)
-			if current_frame != video_frame_nr:
-				if current_frame + 1 == video_frame_nr:
-					current_frame = video_frame_nr
-					return Project._file_data[file_id].next_frame()
-				current_frame = video_frame_nr
-				return Project._file_data[file_id].seek_frame(video_frame_nr)
 			print("Not implemented yet!")
 		File.COLOR:
 			print("Not implemented yet!")
