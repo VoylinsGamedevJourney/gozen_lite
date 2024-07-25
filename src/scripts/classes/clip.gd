@@ -22,7 +22,7 @@ func get_video_frame(a_is_playing: bool) -> Image:
 	if video_data == null:
 		video_data = Video.new()
 		video_data.open_video(Project.file_data[file_id].path, false)
-	if frame_skip < 0 or frame_skip > 8 or !a_is_playing:
+	if frame_skip < 0 or frame_skip > 8 or (!a_is_playing and frame_skip > 8):
 		video_frame_nr = current_frame
 		return video_data.seek_frame(current_frame)
 	else:

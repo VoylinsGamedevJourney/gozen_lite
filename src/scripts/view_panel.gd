@@ -9,6 +9,7 @@ var was_playing: bool = false
 
 var time_elapsed: float = 0.0
 var is_dragging: bool = false
+var previous_drag_time: int = 0
 
 var views: Array[TextureRect] = []
 var current_clips: Array[Clip] = []
@@ -36,6 +37,7 @@ func _input(a_event: InputEvent) -> void:
 
 func _process(a_delta: float) -> void:
 	if is_playing:
+		print(999)
 		time_elapsed += a_delta
 		if time_elapsed < 1./Project.frame_rate:
 			return
@@ -121,7 +123,16 @@ func get_clip_from_raw(a_track_id: int, a_frame_nr: int) -> Clip:
 
 
 
-func playhead_moved(_dragging: bool) -> void:
+func playhead_moved(a_dragging: bool) -> void:
 	# Have some performance stuff for when dragging
-	set_frame()
+	if !is_dragging and a_dragging:
+		is_dragging = a_dragging
+		was_playing = is_playing
+		is_playing = false
+	if abs(abs(get_current_frame_nr())-abs(current_frame)) < 20 or previous_drag_time + 100 <= Time.get_ticks_msec():
+		previous_drag_time = Time.get_ticks_msec()
+		set_frame()
+	if !a_dragging:
+		is_dragging = false
+		is_playing = was_playing
 

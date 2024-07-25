@@ -13,5 +13,5 @@ func _ready() -> void:
 
 static func show_file_effects(a_file_id: int) -> void:
 	# Already connected to file buttons!
-	print(a_file_id)
+	pass #print(a_file_id)
 
