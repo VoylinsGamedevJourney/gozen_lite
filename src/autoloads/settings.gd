@@ -18,4 +18,3 @@ func _ready():
 		load_data(PATH)
 	else:
 		save_data(PATH)
-

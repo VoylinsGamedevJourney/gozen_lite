@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://bcrotmrvepics"]
+[gd_scene load_steps=21 format=3 uid="uid://bcrotmrvepics"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_uwbs4"]
 [ext_resource type="Script" path="res://scripts/menu_bar.gd" id="2_8dkfa"]
@@ -11,6 +11,9 @@
 [ext_resource type="Texture2D" uid="uid://dlacvk44n7sof" path="res://icons/play_arrow.png" id="7_3ufo4"]
 [ext_resource type="Texture2D" uid="uid://x1t6mpi0of53" path="res://icons/fast_forward.png" id="8_f25q7"]
 [ext_resource type="Texture2D" uid="uid://cbw4dhih25o8d" path="res://icons/effect.png" id="10_yomit"]
+[ext_resource type="Script" path="res://scripts/render_menu.gd" id="12_o2q71"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rbpew"]
 
 [sub_resource type="ViewportTexture" id="ViewportTexture_hxdk8"]
 viewport_path = NodePath("VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/SubViewportContainer/ViewSubViewport")
@@ -29,7 +32,22 @@ content_margin_bottom = 10.0
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_41ac2"]
 bg_color = Color(0.6, 0.6, 0.6, 0.556863)
 
-[node name="Main" type="MarginContainer"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lh8hy"]
+bg_color = Color(0.14902, 0.14902, 0.14902, 0.584314)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ouyaw"]
+bg_color = Color(0.203125, 0.203125, 0.203125, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_taplc"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.0898438, 0.0898438, 0.0898438, 1)
+
+[node name="Main" type="PanelContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -37,6 +55,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_rbpew")
 script = ExtResource("1_uwbs4")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -304,7 +323,133 @@ offset_right = 3.0
 offset_bottom = 2000.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_41ac2")
 
+[node name="RenderBackground" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lh8hy")
+script = ExtResource("12_o2q71")
+
+[node name="RenderMenu" type="PanelContainer" parent="RenderBackground"]
+clip_children = 2
+custom_minimum_size = Vector2(800, 500)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_ouyaw")
+
+[node name="VBox" type="VBoxContainer" parent="RenderBackground/RenderMenu"]
+layout_mode = 2
+
+[node name="RenderMenuTopBar" type="PanelContainer" parent="RenderBackground/RenderMenu/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_taplc")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="RenderBackground/RenderMenu/VBox/RenderMenuTopBar"]
+layout_mode = 2
+
+[node name="MenuTitleLabel" type="Label" parent="RenderBackground/RenderMenu/VBox/RenderMenuTopBar/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Render menu"
+
+[node name="CloseButton" type="Button" parent="RenderBackground/RenderMenu/VBox/RenderMenuTopBar/HBoxContainer"]
+layout_mode = 2
+text = "x"
+
+[node name="GridContainer" type="GridContainer" parent="RenderBackground/RenderMenu/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+columns = 2
+
+[node name="VideoCodecLabel" type="Label" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+text = "Video Codec"
+horizontal_alignment = 2
+
+[node name="VideoCodecOptionButton" type="OptionButton" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="AudioCodecLabel" type="Label" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+layout_mode = 2
+text = "Audio Codec"
+horizontal_alignment = 2
+
+[node name="AudioCodecOptionButton" type="OptionButton" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+layout_mode = 2
+
+[node name="Spacer" type="Control" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+layout_mode = 2
+
+[node name="HardwareCodecInfoLabel" type="Label" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "* = Hardware acceleration possible"
+horizontal_alignment = 2
+
+[node name="RenderAudioLabel" type="Label" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+layout_mode = 2
+text = "Enable audio"
+horizontal_alignment = 2
+
+[node name="CheckBox" type="CheckBox" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+layout_mode = 2
+
+[node name="OutputFileLabel" type="Label" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+layout_mode = 2
+horizontal_alignment = 2
+
+[node name="OutputFileHBox" type="HBoxContainer" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+layout_mode = 2
+
+[node name="OutputFileLineEdit" type="LineEdit" parent="RenderBackground/RenderMenu/VBox/GridContainer/OutputFileHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Button" type="Button" parent="RenderBackground/RenderMenu/VBox/GridContainer/OutputFileHBox"]
+layout_mode = 2
+text = "Select path"
+
+[node name="BitRateLabel" type="Label" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+layout_mode = 2
+text = "Bit rate"
+horizontal_alignment = 2
+
+[node name="BitRateSpinBox" type="SpinBox" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+min_value = 1000.0
+max_value = 40000.0
+step = 100.0
+value = 4500.0
+alignment = 2
+suffix = "kbps"
+
+[node name="GopSizeLabel" type="Label" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+layout_mode = 2
+text = "GOP size"
+horizontal_alignment = 2
+
+[node name="GopSizeSpinBox" type="SpinBox" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+max_value = 20.0
+value = 10.0
+alignment = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="RenderBackground/RenderMenu/VBox"]
+layout_mode = 2
+alignment = 2
+
+[node name="RenderButton" type="Button" parent="RenderBackground/RenderMenu/VBox/HBoxContainer"]
+layout_mode = 2
+text = "Render video"
+
 [connection signal="pressed" from="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox/RewindButton" to="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel" method="_on_rewind_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox/PlayPauseButton" to="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel" method="_on_play_pause_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox/ForwardButton" to="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel" method="_on_forward_button_pressed"]
 [connection signal="gui_input" from="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll/TimelineMain/TimelineMainVBox" to="VBoxContainer/MainVSplit/TimelinePanel" method="_on_timeline_main_v_box_gui_input"]
+[connection signal="pressed" from="RenderBackground/RenderMenu/VBox/RenderMenuTopBar/HBoxContainer/CloseButton" to="RenderBackground" method="_on_close_button_pressed"]

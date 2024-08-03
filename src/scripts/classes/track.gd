@@ -27,7 +27,7 @@ func load_project() -> void:
 		add_new_clip(Project.tracks[get_index()][l_clip_timestamp])
 
 
-func add_clip_timedata(a_clip: Clip) -> void:
+func add_clip_timedata(a_clip: ClipData) -> void:
 	_track_range.append_array(range(
 		a_clip.timeline_start, a_clip.timeline_start + a_clip.duration))
 	
@@ -58,7 +58,7 @@ func _can_drop_data(a_position: Vector2, a_data: Variant, a_video_extra: bool = 
 			remove_preview()
 			return false
 		if l_type == File.VIDEO:
-			preview.size.x = l_duration / Project._file_data[a_data].get_framerate() * Project.frame_rate * Timeline.timeline_scale
+			preview.size.x = l_duration / Project._file_data[a_data][0].get_framerate() * Project.frame_rate * Timeline.timeline_scale
 		elif l_type == File.AUDIO:
 			preview.size.x = l_duration * Project.frame_rate * Timeline.timeline_scale
 		else:
@@ -88,7 +88,7 @@ func remove_preview() -> void:
 func _drop_data(a_position: Vector2, a_data: Variant) -> void:
 	remove_preview()
 	if typeof(a_data) == TYPE_INT:
-		var l_clip: Clip = Clip.new()
+		var l_clip: ClipData = ClipData.new()
 		l_clip.file_id = a_data
 		l_clip.timeline_start = preview.position.x 
 		l_clip.duration = Project.file_data[l_clip.file_id].duration

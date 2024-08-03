@@ -11,7 +11,7 @@ var original_pos: float = 0.
 var mouse_offset: float = 0.
 
 
-func _process(a_delta: float) -> void:
+func _process(_delta: float) -> void:
 	if is_moving:
 		pass
 	elif is_resizing_left:
