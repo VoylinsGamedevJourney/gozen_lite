@@ -90,7 +90,7 @@ func _drop_data(a_position: Vector2, a_data: Variant) -> void:
 	if typeof(a_data) == TYPE_INT:
 		var l_clip: ClipData = ClipData.new()
 		l_clip.file_id = a_data
-		l_clip.timeline_start = preview.position.x 
+		l_clip.timeline_start = floori(a_position.x / Timeline.timeline_scale)
 		l_clip.duration = Project.file_data[l_clip.file_id].duration
 		add_new_clip(Project.add_clip(l_clip, get_index()))
 
@@ -98,7 +98,7 @@ func _drop_data(a_position: Vector2, a_data: Variant) -> void:
 func add_new_clip(a_clip_id: int) -> void:
 	var l_clip: PanelContainer = preload("res://resources/clip.tscn").instantiate()
 	l_clip.set_clip_properties(a_clip_id)
-	l_clip.position.x = Project.clips[a_clip_id].timeline_start
+	l_clip.position.x = Project.clips[a_clip_id].timeline_start * Timeline.timeline_scale
 	l_clip.size.x = preview.size.x
 	l_clip.size.y = size.y
 	l_clip.mouse_filter = Control.MOUSE_FILTER_PASS

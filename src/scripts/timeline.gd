@@ -1,21 +1,23 @@
 class_name Timeline extends PanelContainer
 
 
-signal _scale_changed
+signal _scale_changed()
 
 static var instance: Timeline
 static var timeline_scale: float = 1. # One frame is a pixel in this scale
 
 static var timeline_scale_max: float = 5.6
-static var timeline_scale_min: float = 0.6
+static var timeline_scale_min: float = 0.1
 
 var is_dragging: bool = false
+var pre_zoom: Array = [0,0,0] # local mouse position, scroll position, previous timeline_scale
+
 
 
 func _ready() -> void:
-	update_timeline()
 	instance = self
 	load_defaults()
+	call_deferred("update_timeline")
 
 
 func _process(_delta: float) -> void:
@@ -38,17 +40,39 @@ func _on_timeline_main_v_box_gui_input(a_event:InputEvent) -> void:
 	
 	# TODO: Make the scroll of the timeline work according to where the mouse is located
 	if a_event.is_action_released("timeline_zoom_in", true):# and a_event.ctrl_pressed:
+		get_viewport().set_input_as_handled()
+		_set_pre_zoom()
 		if timeline_scale_max > timeline_scale:
-			timeline_scale += 0.1
+			timeline_scale += 0.05
 		update_timeline()
 	elif a_event.is_action_released("timeline_zoom_out", true):# and a_event.ctrl_pressed:
+		get_viewport().set_input_as_handled()
+		_set_pre_zoom()
 		if timeline_scale_min < timeline_scale:
-			timeline_scale -= 0.1
+			timeline_scale -= 0.05
 		update_timeline()
+
+
+func _set_pre_zoom() -> void:
+	pre_zoom[0] = get_local_mouse_position().x
+	pre_zoom[1] = %MainTimelineScroll.scroll_horizontal
+	pre_zoom[2] = timeline_scale
 
 
 func update_timeline() -> void:
-	%TimelineMainVBox.get_parent().size.x = Project.get_end_frame_timepoint() + 8000 * timeline_scale
+	timeline_scale = clampf(timeline_scale, timeline_scale_min, timeline_scale_max)
+	if (Project.get_end_frame_timepoint() + 8000) * timeline_scale < %MainTimelineScroll.size.x:
+		%TimelineMainVBox.get_parent().size.x = %MainTimelineScroll.size.x
+		%TimelineMainVBox.get_parent().custom_minimum_size.x = %MainTimelineScroll.size.x
+	else:
+		%TimelineMainVBox.get_parent().size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
+		%TimelineMainVBox.get_parent().custom_minimum_size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
+	if %Playhead.position.x != 0:
+		%Playhead.position.x = %Playhead.position.x/pre_zoom[2]*timeline_scale
+	if pre_zoom[1] == 0:
+		%MainTimelineScroll.scroll_horizontal = 0
+	else:
+		%MainTimelineScroll.scroll_horizontal =	((pre_zoom[0]/pre_zoom[2])*timeline_scale)-(pre_zoom[0]-pre_zoom[1])
 	_scale_changed.emit()
 
 
@@ -115,4 +139,8 @@ func _create_header() -> PanelContainer:
 	l_panel.add_child(l_hbox)
 	return l_panel
 
+
+func _on_main_timeline_scroll_gui_input(a_event:InputEvent) -> void:
+	if a_event.ctrl_pressed:
+		get_viewport().set_input_as_handled()
 

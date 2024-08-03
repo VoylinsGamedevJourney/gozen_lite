@@ -299,7 +299,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="TimelineMain" type="Control" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll"]
-custom_minimum_size = Vector2(8000, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -451,5 +450,6 @@ text = "Render video"
 [connection signal="pressed" from="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox/RewindButton" to="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel" method="_on_rewind_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox/PlayPauseButton" to="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel" method="_on_play_pause_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox/ForwardButton" to="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel" method="_on_forward_button_pressed"]
+[connection signal="gui_input" from="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll" to="VBoxContainer/MainVSplit/TimelinePanel" method="_on_main_timeline_scroll_gui_input"]
 [connection signal="gui_input" from="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll/TimelineMain/TimelineMainVBox" to="VBoxContainer/MainVSplit/TimelinePanel" method="_on_timeline_main_v_box_gui_input"]
 [connection signal="pressed" from="RenderBackground/RenderMenu/VBox/RenderMenuTopBar/HBoxContainer/CloseButton" to="RenderBackground" method="_on_close_button_pressed"]
