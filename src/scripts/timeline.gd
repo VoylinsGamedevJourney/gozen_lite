@@ -9,6 +9,7 @@ static var timeline_scale: float = 1. # One frame is a pixel in this scale
 static var timeline_scale_max: float = 5.6
 static var timeline_scale_min: float = 0.1
 
+static var is_clip_being_moved: bool = false
 var is_dragging: bool = false
 var pre_zoom: Array = [0,0,0] # local mouse position, scroll position, previous timeline_scale
 
@@ -21,7 +22,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	if is_dragging:
+	if is_dragging and !is_clip_being_moved:
 		var l_temp: float = %TimelineMainVBox.get_local_mouse_position().x
 		if l_temp < 0:
 			l_temp = 0.0
@@ -38,7 +39,6 @@ func _on_timeline_main_v_box_gui_input(a_event:InputEvent) -> void:
 			elif a_event.is_pressed():
 				is_dragging = true
 	
-	# TODO: Make the scroll of the timeline work according to where the mouse is located
 	if a_event.is_action_released("timeline_zoom_in", true):# and a_event.ctrl_pressed:
 		get_viewport().set_input_as_handled()
 		_set_pre_zoom()
@@ -82,26 +82,6 @@ func update_timeline() -> void:
 	if %Playhead.position.x != 0:
 		%Playhead.position.x = %Playhead.position.x/pre_zoom[2]*timeline_scale
 
-	_scale_changed.emit()
-	return
-	if (Project.get_end_frame_timepoint() + 8000) * timeline_scale < %MainTimelineScroll.size.x:
-		%TimelineMainVBox.get_parent().custom_minimum_size.x = %MainTimelineScroll.size.x
-		%TimelineMainVBox.get_parent().size.x = %MainTimelineScroll.size.x
-	else:
-		%TimelineMainVBox.get_parent().custom_minimum_size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
-		%TimelineMainVBox.get_parent().size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
-		%TimelineMainVBox.custom_minimum_size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
-		%TimelineMainVBox.size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
-
-
-	if pre_zoom[1] == 0:
-		%MainTimelineScroll.scroll_horizontal = 0
-	else:
-		%MainTimelineScroll.scroll_horizontal = (pre_zoom[0]/pre_zoom[2]*timeline_scale)-(pre_zoom[0]-pre_zoom[1])
-
-	print("begin")
-	print(roundi(%MainTimelineScroll.get_h_scroll_bar().max_value/timeline_scale))
-	print(roundi(%TimelineMainVBox.get_parent().size.x/timeline_scale))
 	_scale_changed.emit()
 
 

@@ -100,6 +100,8 @@ func set_frame(a_frame_nr: int = get_current_frame_nr()) -> void:
 			# Check if clip is loaded
 			if current_clips[l_track_id] == null: # Find which clip is there
 				current_clips[l_track_id] = get_clip_from_raw(l_track_id, a_frame_nr)
+			if current_clips[l_track_id] == null:
+				return
 
 			var l_type: int = Project.file_data[current_clips[l_track_id].file_id].type
 			if l_type == File.VIDEO:
@@ -133,6 +135,7 @@ func get_clip_from_raw(a_track_id: int, a_frame_nr: int) -> ClipData:
 	for l_i: int in range(a_frame_nr):
 		if Project.tracks[a_track_id].has(a_frame_nr - l_i):
 			return Project.clips[Project.tracks[a_track_id][a_frame_nr - l_i]]
+	printerr("Couldn't get clip!")
 	return null
 
 

@@ -152,6 +152,18 @@ func add_clip(a_clip: ClipData, a_track_id: int) -> int:
 	tracks[a_track_id][a_clip.timeline_start] = l_id
 	return l_id
 
+
+func move_clip(a_clip_id: int, a_prev_timeline_start: int, a_prev_track_id: int, a_new_track_id: int) -> void:
+	if !tracks[a_prev_track_id].erase(a_prev_timeline_start):
+		printerr("Trying to remove clip from track but non existant!")
+	tracks[a_new_track_id][clips[a_clip_id].timeline_start] = a_clip_id
+
+
+func remove_clip(a_clip_id: int, a_track_id: int) -> void:
+	if !tracks[a_track_id].erase(clips[a_clip_id].timeline_start):
+		printerr("Trying to remove clip from track but non existant!")
+	clips.erase(a_clip_id)
+
 	
 func _add_file_data(a_file_id: int) -> void:
 	var l_file: File = file_data[a_file_id]

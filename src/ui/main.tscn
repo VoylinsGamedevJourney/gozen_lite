@@ -314,10 +314,11 @@ theme_override_constants/separation = 0
 
 [node name="Playhead" type="Panel" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll/TimelineMain"]
 unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.501961)
 layout_mode = 0
 offset_right = 3.0
 offset_bottom = 2000.0
-mouse_filter = 1
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_41ac2")
 
 [node name="RenderBackground" type="PanelContainer" parent="."]
