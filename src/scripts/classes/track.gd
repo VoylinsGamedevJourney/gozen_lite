@@ -4,6 +4,7 @@ class_name Track extends Panel
 # TODO: Track scaling when scale signal has been emitted.
 
 
+
 var snap_limit: int = 20:
 	get: return roundi(snap_limit * Timeline.timeline_scale)
 var preview: PanelContainer = null
@@ -45,25 +46,29 @@ func _can_drop_data(a_position: Vector2, a_data: Variant, a_video_extra: bool = 
 		var l_type: int = Project.file_data[a_data].type
 		var l_duration: int = Project.file_data[a_data].duration
 		var l_offset: int = -100
+		var l_frame_pos: int = roundi(a_position.x / Timeline.timeline_scale)
+
 		for l_snap_offset: int in snap_limit:
 			if _to_fit_or_not_to_fit(range(
-					a_position.x + l_snap_offset, a_position.x + l_duration + l_snap_offset)):
+					l_frame_pos + l_snap_offset, l_frame_pos + l_duration + l_snap_offset)):
 				l_offset = l_snap_offset
 				break
 			if _to_fit_or_not_to_fit(range(
-					a_position.x - l_snap_offset, a_position.x + l_duration - l_snap_offset)):
+					l_frame_pos - l_snap_offset, l_frame_pos + l_duration - l_snap_offset)):
 				l_offset = -l_snap_offset
 				break
 		if l_offset == -100:
 			remove_preview()
 			return false
+
 		if l_type == File.VIDEO:
 			preview.size.x = l_duration / Project._file_data[a_data][0].get_framerate() * Project.frame_rate * Timeline.timeline_scale
 		elif l_type == File.AUDIO:
 			preview.size.x = l_duration * Project.frame_rate * Timeline.timeline_scale
 		else:
 			preview.size.x = l_duration * Timeline.timeline_scale
-		set_preview(a_position.x + l_offset)
+
+		set_preview(a_position.x + (l_offset*Timeline.timeline_scale))
 		return true
 	remove_preview()
 	return false
@@ -90,7 +95,7 @@ func _drop_data(a_position: Vector2, a_data: Variant) -> void:
 	if typeof(a_data) == TYPE_INT:
 		var l_clip: ClipData = ClipData.new()
 		l_clip.file_id = a_data
-		l_clip.timeline_start = floori(a_position.x / Timeline.timeline_scale)
+		l_clip.timeline_start = preview.position.x / Timeline.timeline_scale
 		l_clip.duration = Project.file_data[l_clip.file_id].duration
 		add_new_clip(Project.add_clip(l_clip, get_index()))
 

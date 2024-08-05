@@ -27,7 +27,7 @@ func get_video_frame(a_is_playing: bool) -> ImageTexture:
 
 
 func next_frame_available(a_frame_nr: int, a_clip: ClipData) -> bool: # Only for video
-	current_frame = floori(a_frame_nr - a_clip.timeline_start - a_clip.start_frame / Project.frame_rate * video_data.get_framerate())
+	current_frame = round(a_frame_nr - a_clip.timeline_start - a_clip.start_frame / Project.frame_rate * video_data.get_framerate())
 	if current_frame != video_frame_nr:
 		frame_skip = -1 if current_frame < video_frame_nr else current_frame - video_frame_nr
 		return true

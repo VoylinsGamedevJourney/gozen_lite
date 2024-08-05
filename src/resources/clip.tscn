@@ -23,29 +23,35 @@ theme_override_font_sizes/font_size = 10
 text = "clip_name"
 clip_text = true
 
-[node name="ButtonHBox" type="HBoxContainer" parent="."]
-layout_mode = 2
-theme_override_constants/separation = 0
-
-[node name="ResizeLeftButton" type="Button" parent="ButtonHBox"]
-custom_minimum_size = Vector2(10, 0)
-layout_mode = 2
-flat = true
-
-[node name="MoveButton" type="Button" parent="ButtonHBox"]
+[node name="Button" type="Button" parent="."]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 1
 flat = true
 
-[node name="ResizeRightButton" type="Button" parent="ButtonHBox"]
-custom_minimum_size = Vector2(10, 10)
-layout_mode = 2
-flat = true
+[node name="LeftResizeButton" type="Button" parent="Button"]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 8.0
+grow_vertical = 2
+mouse_filter = 2
+mouse_default_cursor_shape = 10
 
-[connection signal="resized" from="." to="." method="_on_resized"]
-[connection signal="button_down" from="ButtonHBox/ResizeLeftButton" to="." method="_on_resize_left_button_button_down"]
-[connection signal="button_up" from="ButtonHBox/ResizeLeftButton" to="." method="_on_resize_left_button_button_up"]
-[connection signal="button_down" from="ButtonHBox/MoveButton" to="." method="_on_move_button_button_down"]
-[connection signal="button_up" from="ButtonHBox/MoveButton" to="." method="_on_move_button_button_up"]
-[connection signal="button_down" from="ButtonHBox/ResizeRightButton" to="." method="_on_resize_right_button_button_down"]
-[connection signal="button_up" from="ButtonHBox/ResizeRightButton" to="." method="_on_resize_right_button_button_up"]
+[node name="RightResizeButton" type="Button" parent="Button"]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -8.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 2
+mouse_default_cursor_shape = 10
+
+[connection signal="button_down" from="Button" to="." method="_on_button_button_down"]
+[connection signal="button_up" from="Button" to="." method="_on_button_button_up"]
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

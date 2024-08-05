@@ -54,25 +54,54 @@ func _on_timeline_main_v_box_gui_input(a_event:InputEvent) -> void:
 
 
 func _set_pre_zoom() -> void:
-	pre_zoom[0] = get_local_mouse_position().x
+	pre_zoom[0] = %TimelineMainVBox.get_local_mouse_position().x
 	pre_zoom[1] = %MainTimelineScroll.scroll_horizontal
 	pre_zoom[2] = timeline_scale
 
 
 func update_timeline() -> void:
 	timeline_scale = clampf(timeline_scale, timeline_scale_min, timeline_scale_max)
+
+	# Resizing the timeline
 	if (Project.get_end_frame_timepoint() + 8000) * timeline_scale < %MainTimelineScroll.size.x:
-		%TimelineMainVBox.get_parent().size.x = %MainTimelineScroll.size.x
 		%TimelineMainVBox.get_parent().custom_minimum_size.x = %MainTimelineScroll.size.x
+		%TimelineMainVBox.custom_minimum_size.x = %MainTimelineScroll.size.x
+		%TimelineMainVBox.size.x = %MainTimelineScroll.size.x
 	else:
-		%TimelineMainVBox.get_parent().size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
 		%TimelineMainVBox.get_parent().custom_minimum_size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
+		%TimelineMainVBox.custom_minimum_size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
+		%TimelineMainVBox.size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
+
+	# Setting the scroll_horizontal correct
+	if %MainTimelineScroll.scroll_horizontal != 0: 
+		var l_scroll_offset: int = pre_zoom[0] - pre_zoom[1]
+		var l_new_scroll: int = roundi(roundi(pre_zoom[0]/pre_zoom[2])*timeline_scale)
+		%MainTimelineScroll.scroll_horizontal = abs(l_new_scroll - l_scroll_offset) # (pre_zoom[1]/pre_zoom[2]*timeline_scale)#-(pre_zoom[0]-pre_zoom[1])
+
+	# Changing playhead to correct position
 	if %Playhead.position.x != 0:
 		%Playhead.position.x = %Playhead.position.x/pre_zoom[2]*timeline_scale
+
+	_scale_changed.emit()
+	return
+	if (Project.get_end_frame_timepoint() + 8000) * timeline_scale < %MainTimelineScroll.size.x:
+		%TimelineMainVBox.get_parent().custom_minimum_size.x = %MainTimelineScroll.size.x
+		%TimelineMainVBox.get_parent().size.x = %MainTimelineScroll.size.x
+	else:
+		%TimelineMainVBox.get_parent().custom_minimum_size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
+		%TimelineMainVBox.get_parent().size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
+		%TimelineMainVBox.custom_minimum_size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
+		%TimelineMainVBox.size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
+
+
 	if pre_zoom[1] == 0:
 		%MainTimelineScroll.scroll_horizontal = 0
 	else:
-		%MainTimelineScroll.scroll_horizontal =	((pre_zoom[0]/pre_zoom[2])*timeline_scale)-(pre_zoom[0]-pre_zoom[1])
+		%MainTimelineScroll.scroll_horizontal = (pre_zoom[0]/pre_zoom[2]*timeline_scale)-(pre_zoom[0]-pre_zoom[1])
+
+	print("begin")
+	print(roundi(%MainTimelineScroll.get_h_scroll_bar().max_value/timeline_scale))
+	print(roundi(%TimelineMainVBox.get_parent().size.x/timeline_scale))
 	_scale_changed.emit()
 
 

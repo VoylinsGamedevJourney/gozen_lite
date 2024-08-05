@@ -32,43 +32,19 @@ func set_label_text(a_text: String) -> void:
 	$MarginContainer/NameLabel.text = a_text
 
 
-func _on_parent_resized() -> void:
-	size.y = get_parent().size.y	
+func _on_button_pressed() -> void:
+	# TODO: Send data to Effects panel to show the effects settings for this clip
+	print("YEY")
 
 
-func _on_resized():
-	$ButtonHBox/ResizeRightButton.visible = size.x < 30
-	$ButtonHBox/ResizeLeftButton.visible = size.x < 30
+func _on_button_button_down():
+	# TODO: Start detecting if being moved or not
+	pass # Replace with function body.
 
 
-func _on_resize_right_button_button_up() -> void:
-	is_resizing_right = false
+func _on_button_button_up():
+	# TODO: If moved in valid position, finish the move
+	pass # Replace with function body.
 
 
-func _on_resize_right_button_button_down() -> void:
-	mouse_offset = get_local_mouse_position().x
-	original_pos = position.x
-	is_resizing_right = true
-
-
-func _on_move_button_button_up() -> void:
-	is_moving = false
-
-
-func _on_move_button_button_down() -> void:
-	# DON't do this but use build in drag drop and change track stuff
-	mouse_offset = get_local_mouse_position().x
-	original_pos = position.x
-	is_moving = true
-
-
-func _on_resize_left_button_button_up() -> void:
-	is_resizing_left = false
-	# TODO: Apply changes in timedata in track, clip vars, ...
-
-
-func _on_resize_left_button_button_down() -> void:
-	mouse_offset = get_local_mouse_position().x
-	original_pos = position.x
-	is_resizing_left = false
 
