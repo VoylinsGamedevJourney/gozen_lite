@@ -36,13 +36,13 @@ func _on_timeline_main_v_box_gui_input(a_event:InputEvent) -> void:
 	if a_event.is_action_released("timeline_zoom_in", true):# and a_event.ctrl_pressed:
 		get_viewport().set_input_as_handled()
 		_set_pre_zoom()
-		if Project.timeline_scale_max > Project.timeline_scale:
+		if Settings.timeline_scale_max > Project.timeline_scale:
 			Project.timeline_scale += 0.05
 		update_timeline()
 	elif a_event.is_action_released("timeline_zoom_out", true):# and a_event.ctrl_pressed:
 		get_viewport().set_input_as_handled()
 		_set_pre_zoom()
-		if Project.timeline_scale_min < Project.timeline_scale:
+		if Settings.timeline_scale_min < Project.timeline_scale:
 			Project.timeline_scale -= 0.05
 		update_timeline()
 

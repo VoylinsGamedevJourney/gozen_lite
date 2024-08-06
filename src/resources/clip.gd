@@ -1,10 +1,11 @@
 class_name Clip extends PanelContainer
 
+const RESIZE_HANDLE_SIZE: int = 10
+
 static var selected_clips: Array[PanelContainer] = []
 
 var clip_id: int = -1
 
-var is_moving: bool = false
 var is_resizing_left: bool = false
 var is_resizing_right: bool = false
 
@@ -16,9 +17,7 @@ var is_dragging: bool = false
 
 
 func _process(_delta: float) -> void:
-	if is_moving:
-		pass
-	elif is_resizing_left:
+	if is_resizing_left:
 		# TODO: Remember that we need to change Project.tracks[track_id][start_time]
 		# We could possibly do this with move_clip and just change the duration before that
 		# For video clips we need to change the start time in clip_data
@@ -52,20 +51,29 @@ func _on_button_pressed() -> void:
 
 func _on_button_button_down():
 	# TODO: Start detecting if being moved or not
-	get_viewport().set_input_as_handled()
-	pass # Replace with function body.
+	# if in 10 last pixels from button, resize right
+	if get_local_mouse_position().x > size.x - RESIZE_HANDLE_SIZE:
+		print("Resizing right")
+	elif get_local_mouse_position().x < RESIZE_HANDLE_SIZE:
+		print("Resizing right")
+	else:
+		is_dragging = true
+	get_viewport().set_input_as_handled() # To disable playhead from moving
 
 
 func _on_button_button_up():
 	# TODO: If moved in valid position, finish the move
+	is_resizing_right = false
+	is_resizing_left = false
 	pass # Replace with function body.
 
 
 func _get_drag_data(_position: Vector2) -> Variant:
-	is_dragging = true
-	Timeline.is_clip_being_moved = true
-	modulate = Color(1, 1, 1, 0.1)
-	return ["CLIP", clip_id, self]
+	if is_dragging:
+		Timeline.is_clip_being_moved = true
+		modulate = Color(1, 1, 1, 0.1)
+		return ["CLIP", clip_id, self, get_local_mouse_position().x]
+	return null
 
 
 func _notification(notification_type):
