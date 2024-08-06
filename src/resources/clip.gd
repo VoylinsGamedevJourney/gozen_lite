@@ -31,12 +31,16 @@ func set_clip_properties(a_clip_id: int) -> void:
 	clip_id = a_clip_id
 	set_label_text(Project.file_data[Project.clips[a_clip_id].file_id].nickname)
 	position.x = Project.clips[a_clip_id].timeline_start
-	size.x = Project.clips[a_clip_id].duration * Timeline.timeline_scale
+	size.x = Project.clips[a_clip_id].duration * Project.timeline_scale
 	size.y = size.y
 
 
 func set_label_text(a_text: String) -> void:
 	$MarginContainer/NameLabel.text = a_text
+
+
+func get_track_id() -> int:
+	return get_parent().get_index()
 
 
 func _on_button_pressed() -> void:

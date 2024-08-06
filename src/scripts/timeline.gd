@@ -1,88 +1,80 @@
 class_name Timeline extends PanelContainer
 
 
-signal _scale_changed()
-
-static var instance: Timeline
-static var timeline_scale: float = 1. # One frame is a pixel in this scale
-
-static var timeline_scale_max: float = 5.6
-static var timeline_scale_min: float = 0.1
-
 static var is_clip_being_moved: bool = false
-var is_dragging: bool = false
+static var is_playhead_being_moved: bool = false
+
+
 var pre_zoom: Array = [0,0,0] # local mouse position, scroll position, previous timeline_scale
 
 
 
 func _ready() -> void:
-	instance = self
 	load_defaults()
 	call_deferred("update_timeline")
+	Project._on_project_loaded.connect(load_project)
 
 
 func _process(_delta: float) -> void:
-	if is_dragging and !is_clip_being_moved:
+	if is_playhead_being_moved and !is_clip_being_moved:
 		var l_temp: float = %TimelineMainVBox.get_local_mouse_position().x
 		if l_temp < 0:
 			l_temp = 0.0
-		%Playhead.position.x = snappedf(l_temp, timeline_scale)- timeline_scale
-		ViewPanel.instance.playhead_moved(true)
+		%Playhead.position.x = snappedf(l_temp, Project.timeline_scale)- Project.timeline_scale
+		Project._playhead_moved.emit(true)
 
 
 func _on_timeline_main_v_box_gui_input(a_event:InputEvent) -> void:
 	if a_event is InputEventMouseButton:
 		if a_event.button_index == MOUSE_BUTTON_LEFT:
 			if a_event.is_released():
-				is_dragging = false
-				ViewPanel.instance.playhead_moved(false)
+				is_playhead_being_moved = false
+				Project._playhead_moved.emit(false)
 			elif a_event.is_pressed():
-				is_dragging = true
+				is_playhead_being_moved = true
 	
 	if a_event.is_action_released("timeline_zoom_in", true):# and a_event.ctrl_pressed:
 		get_viewport().set_input_as_handled()
 		_set_pre_zoom()
-		if timeline_scale_max > timeline_scale:
-			timeline_scale += 0.05
+		if Project.timeline_scale_max > Project.timeline_scale:
+			Project.timeline_scale += 0.05
 		update_timeline()
 	elif a_event.is_action_released("timeline_zoom_out", true):# and a_event.ctrl_pressed:
 		get_viewport().set_input_as_handled()
 		_set_pre_zoom()
-		if timeline_scale_min < timeline_scale:
-			timeline_scale -= 0.05
+		if Project.timeline_scale_min < Project.timeline_scale:
+			Project.timeline_scale -= 0.05
 		update_timeline()
 
 
 func _set_pre_zoom() -> void:
 	pre_zoom[0] = %TimelineMainVBox.get_local_mouse_position().x
 	pre_zoom[1] = %MainTimelineScroll.scroll_horizontal
-	pre_zoom[2] = timeline_scale
+	pre_zoom[2] = Project.timeline_scale
 
 
 func update_timeline() -> void:
-	timeline_scale = clampf(timeline_scale, timeline_scale_min, timeline_scale_max)
+	Project.set_timeline_scale(Project.timeline_scale)
 
 	# Resizing the timeline
-	if (Project.get_end_frame_timepoint() + 8000) * timeline_scale < %MainTimelineScroll.size.x:
+	if (Project.get_end_frame_pts() + 8000) * Project.timeline_scale < %MainTimelineScroll.size.x:
 		%TimelineMainVBox.get_parent().custom_minimum_size.x = %MainTimelineScroll.size.x
 		%TimelineMainVBox.custom_minimum_size.x = %MainTimelineScroll.size.x
 		%TimelineMainVBox.size.x = %MainTimelineScroll.size.x
 	else:
-		%TimelineMainVBox.get_parent().custom_minimum_size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
-		%TimelineMainVBox.custom_minimum_size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
-		%TimelineMainVBox.size.x = (Project.get_end_frame_timepoint() + 8000) * timeline_scale
+		%TimelineMainVBox.get_parent().custom_minimum_size.x = (Project.get_end_frame_pts() + 8000) * Project.timeline_scale
+		%TimelineMainVBox.custom_minimum_size.x = (Project.get_end_frame_pts() + 8000) * Project.timeline_scale
+		%TimelineMainVBox.size.x = (Project.get_end_frame_pts() + 8000) * Project.timeline_scale
 
 	# Setting the scroll_horizontal correct
 	if %MainTimelineScroll.scroll_horizontal != 0: 
 		var l_scroll_offset: int = pre_zoom[0] - pre_zoom[1]
-		var l_new_scroll: int = roundi(roundi(pre_zoom[0]/pre_zoom[2])*timeline_scale)
+		var l_new_scroll: int = roundi(roundi(pre_zoom[0]/pre_zoom[2])*Project.timeline_scale)
 		%MainTimelineScroll.scroll_horizontal = abs(l_new_scroll - l_scroll_offset) # (pre_zoom[1]/pre_zoom[2]*timeline_scale)#-(pre_zoom[0]-pre_zoom[1])
 
 	# Changing playhead to correct position
 	if %Playhead.position.x != 0:
-		%Playhead.position.x = %Playhead.position.x/pre_zoom[2]*timeline_scale
-
-	_scale_changed.emit()
+		%Playhead.position.x = %Playhead.position.x/pre_zoom[2]*Project.timeline_scale
 
 
 func load_defaults() -> void:
@@ -106,10 +98,6 @@ func _reset() -> void:
 		l_header.free()
 	# We need a certain amount of waiting time else it causes issues
 	await RenderingServer.frame_pre_draw
-
-
-func get_track_raw_data(a_id: int) -> PackedInt64Array:
-	return %TimelineMainVBox.get_child(a_id)._track_range
 
 
 func add_track() -> void:

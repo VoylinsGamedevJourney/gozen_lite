@@ -11,6 +11,8 @@ var duration_text: int = 150
 var duration_color: int = 150
 var duration_gradient: int = 150
 
+var timeline_scale_max: float = 5.6
+var timeline_scale_min: float = 0.1
 
 
 func _ready():

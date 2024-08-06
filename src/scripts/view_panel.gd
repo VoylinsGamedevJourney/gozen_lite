@@ -1,8 +1,6 @@
 class_name ViewPanel extends PanelContainer
 
 
-static var instance: ViewPanel
-
 var end_timepoint: int = 0
 var is_playing: bool = false
 var was_playing: bool = false
@@ -19,12 +17,14 @@ var current_frame: int = -1
 
 
 func _ready() -> void:
-	instance = self
 	Project._on_project_loaded.connect(func() -> void:
 			views = []
 			current_clips = []
-			set_frame()
+			set_frame_forced()
 			%ViewSubViewport.size = Project.resolution)
+	Project._set_frame.connect(set_frame)
+	Project._set_frame_forced.connect(set_frame_forced)
+	Project._playhead_moved.connect(playhead_moved)
 	for l_id: int in Project.tracks.size():
 		add_view()
 	%ViewSubViewport.size = Project.resolution
@@ -43,9 +43,9 @@ func _process(a_delta: float) -> void:
 		
 		while time_elapsed >= 1./Project.frame_rate:
 			time_elapsed -= 1./Project.frame_rate
-			%Playhead.position.x += Timeline.instance.timeline_scale
+			%Playhead.position.x += Project.timeline_scale
 		
-		if get_current_frame_nr() >= Project.get_end_frame_timepoint():
+		if get_current_frame_nr() >= Project.get_end_frame_pts():
 			if is_dragging:
 				return
 			is_playing = !is_playing
@@ -54,7 +54,7 @@ func _process(a_delta: float) -> void:
 
 
 func get_current_frame_nr() -> int:
-	return roundi(%Playhead.position.x / Timeline.instance.timeline_scale)
+	return roundi(%Playhead.position.x / Project.timeline_scale)
 
 
 func _on_play_pause_button_pressed():
@@ -91,12 +91,17 @@ func remove_view() -> void:
 	current_clips.pop_back()
 
 
-func set_frame(a_frame_nr: int = get_current_frame_nr()) -> void:
-	if current_frame == a_frame_nr:
+func set_frame_forced() -> void:
+	# Used for updating the view once for when example frames are dropped
+	set_frame(get_current_frame_nr(), true)
+
+
+func set_frame(a_frame_nr: int = get_current_frame_nr(), a_force: bool = false) -> void:
+	if current_frame == a_frame_nr and !a_force:
 		return
 	current_frame = a_frame_nr
 	for l_track_id: int in Project.tracks.size():
-		if a_frame_nr in Timeline.instance.get_track_raw_data(l_track_id):
+		if a_frame_nr in Project._track_data[l_track_id]:
 			# Check if clip is loaded
 			if current_clips[l_track_id] == null: # Find which clip is there
 				current_clips[l_track_id] = get_clip_from_raw(l_track_id, a_frame_nr)
@@ -148,7 +153,7 @@ func playhead_moved(a_dragging: bool) -> void:
 		is_playing = false
 	if abs(abs(get_current_frame_nr())-abs(current_frame)) < 20 or previous_drag_time + 100 <= Time.get_ticks_msec():
 		previous_drag_time = Time.get_ticks_msec()
-		set_frame()
+		set_frame_forced()
 	if !a_dragging:
 		is_dragging = false
 		is_playing = was_playing
