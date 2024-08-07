@@ -12,10 +12,13 @@ signal _set_frame(frame_nr)
 signal _set_frame_forced
 signal _playhead_moved(value)
 
+signal _is_resizing_clip(clip_id, track_id, direction) # direction: true = left, false = right
+
 
 var _path: String = ""
 var _file_data: Dictionary = {}
 var _track_data: Array[PackedInt64Array] = []
+var _clip_nodes: Dictionary = {}
 
 var counter_file_id: int = 0
 var counter_clip_id: int = 0
@@ -172,6 +175,20 @@ func remove_clip(a_clip_id: int, a_track_id: int) -> void:
 	if !tracks[a_track_id].erase(clips[a_clip_id].timeline_start):
 		printerr("Trying to remove clip from track but non existant!")
 	clips.erase(a_clip_id)
+
+
+func resize_clip(a_clip_id: int) -> void:
+	clips[a_clip_id].duration = pos_to_frame(_clip_nodes[a_clip_id].size.x)
+	clips[a_clip_id].timeline_start = pos_to_frame(_clip_nodes[a_clip_id].position.x)
+
+
+func pos_to_frame(a_pos: float) -> int:
+	return roundi(a_pos / Project.timeline_scale)
+
+
+func frame_to_timeline(a_frame_nr) -> float:
+	return a_frame_nr * Project.timeline_scale
+
 
 	
 func _add_file_data(a_file_id: int) -> void:
