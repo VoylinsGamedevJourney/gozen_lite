@@ -1,5 +1,6 @@
 extends DataManager
 
+# TODO: When changing frame_rate, we need to re-calculate all video and audio files duration
 
 signal _on_project_saved
 signal _on_project_loaded
@@ -127,9 +128,10 @@ func add_file(a_file_path: String) -> void:
 	_add_file_data(l_file_id)
 	match file_data[l_file_id].type:
 		File.VIDEO:
-			file_data[l_file_id].duration = _file_data[l_file_id][0].get_total_frame_nr() 
+			file_data[l_file_id].duration = roundi(
+				_file_data[l_file_id][0].get_total_frame_nr() / _file_data[l_file_id][0].get_framerate() * frame_to_timeline(frame_rate))
 		File.AUDIO:
-			file_data[l_file_id].duration = _file_data[l_file_id].get_length() # This is in seconds and not frames
+			file_data[l_file_id].duration = roundi(_file_data[l_file_id].get_length() * frame_rate)
 	file_data[l_file_id].nickname = a_file_path.split('/')[-1]
 	_on_file_added.emit(l_file_id)
 
@@ -160,26 +162,39 @@ func add_gradient_file(a_gradient: GradientTexture2D) -> void:
 
 func add_clip(a_clip: ClipData, a_track_id: int) -> int:
 	var l_id: int = _get_next_clip_id()
+	a_clip.clip_id = l_id
 	clips[l_id] = a_clip
 	tracks[a_track_id][a_clip.timeline_start] = l_id
+	add_clip_timedata(a_track_id, l_id)
 	return l_id
 
 
-func move_clip(a_clip_id: int, a_prev_pos_x: int, a_prev_track_id: int, a_new_track_id: int) -> void:
-	if !tracks[a_prev_track_id].erase(roundi(a_prev_pos_x / timeline_scale)):
-		printerr("Trying to remove clip from track but non existant!")
-	tracks[a_new_track_id][clips[a_clip_id].timeline_start] = a_clip_id
+func move_clip(a_clip_id: int, a_prev_pts: int, a_new_pts: int, a_prev_track_id: int, a_new_track_id: int) -> void:
+	remove_clip_timedata(a_prev_track_id, a_clip_id)
+	if !tracks[a_prev_track_id].erase(roundi(a_prev_pts / timeline_scale)):
+		printerr("Trying to remove clip from track but non existent!")
+	tracks[a_new_track_id][a_new_pts] = a_clip_id
+	clips[a_clip_id].timeline_start = pos_to_frame(a_new_pts)
+	add_clip_timedata(a_new_track_id, a_clip_id)
 
 
 func remove_clip(a_clip_id: int, a_track_id: int) -> void:
+	remove_clip_timedata(a_track_id, a_clip_id)
 	if !tracks[a_track_id].erase(clips[a_clip_id].timeline_start):
-		printerr("Trying to remove clip from track but non existant!")
+		printerr("Trying to remove clip from track but non existent!")
 	clips.erase(a_clip_id)
 
 
-func resize_clip(a_clip_id: int) -> void:
+func resize_clip(a_clip_id: int, a_track_id: int, a_left: bool) -> void:
+	remove_clip_timedata(a_track_id, a_clip_id)
+	# TODO: If video file, check if position changed, if position changed, we need to change the clip start frame
+	if file_data[clips[a_clip_id].file_id].type in [File.AUDIO, File.VIDEO] and a_left:
+		clips[a_clip_id].start_frame += clips[a_clip_id].timeline_start - pos_to_frame(_clip_nodes[a_clip_id].position.x)
+	tracks[a_track_id].erase(clips[a_clip_id].timeline_start)
 	clips[a_clip_id].duration = pos_to_frame(_clip_nodes[a_clip_id].size.x)
 	clips[a_clip_id].timeline_start = pos_to_frame(_clip_nodes[a_clip_id].position.x)
+	tracks[a_track_id][clips[a_clip_id].timeline_start] = a_clip_id
+	add_clip_timedata(a_track_id, a_clip_id)
 
 
 func pos_to_frame(a_pos: float) -> int:
@@ -203,7 +218,7 @@ func _add_file_data(a_file_id: int) -> void:
 		File.IMAGE:
 			_file_data[a_file_id] = ImageTexture.create_from_image(Image.load_from_file(l_file.path))
 		File.AUDIO:
-			_file_data[a_file_id] = load(l_file.path)
+			_file_data[a_file_id] = AudioImporter.load(l_file.path)
 
 
 func get_end_frame_pts() -> int:
@@ -239,3 +254,4 @@ func add_clip_timedata(a_track_id: int, a_clip_id: int) -> void:
 func remove_clip_timedata(a_track_id: int, a_clip_id: int) -> void:
 	for l_i: int in range(clips[a_clip_id].timeline_start, clips[a_clip_id].timeline_start + clips[a_clip_id].duration):
 		_track_data[a_track_id].remove_at(_track_data[a_track_id].rfind(l_i))
+
