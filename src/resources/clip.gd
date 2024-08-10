@@ -46,6 +46,8 @@ func _on_button_pressed() -> void:
 
 
 func _on_button_button_down():
+	if get_local_mouse_position() > size or get_local_mouse_position() < Vector2.ZERO:
+		return #Mouse is not on button (incase of pressing space with button selected)
 	if get_local_mouse_position().x > size.x - RESIZE_HANDLE_SIZE:
 		is_resizing_right = true
 	elif get_local_mouse_position().x < RESIZE_HANDLE_SIZE:
@@ -56,13 +58,18 @@ func _on_button_button_down():
 
 
 func _on_button_button_up():
-	# TODO: Check if resizing was true for any and save changes
-	is_resizing_right = false
-	is_resizing_left = false
+	if is_resizing_right or is_resizing_left:
+		Project.resize_clip(clip_id, get_track_id(), is_resizing_left)
+		is_resizing_right = false
+		is_resizing_left = false
 
 
 func _get_drag_data(_position: Vector2) -> Variant:
 	if is_dragging:
+		if is_resizing_left or is_resizing_right:
+			is_resizing_right = false
+			is_resizing_left = false
+			get_parent().reset_clip(clip_id)
 		Timeline.is_clip_being_moved = true
 		modulate = Color(1, 1, 1, 0.1)
 		return ["CLIP", clip_id, self, get_local_mouse_position().x]
