@@ -237,6 +237,10 @@ layout_mode = 2
 text = "TimelinePreview"
 horizontal_alignment = 1
 
+[node name="AudioPlayers" type="Control" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+
 [node name="EffectsPanel" type="PanelContainer" parent="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit"]
 custom_minimum_size = Vector2(200, 200)
 layout_mode = 2

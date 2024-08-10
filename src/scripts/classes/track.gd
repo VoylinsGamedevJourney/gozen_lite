@@ -1,9 +1,5 @@
 class_name Track extends Panel
 
-# TODO: Set size of a frame in pixels so placing clips is accurate 
-# TODO: Track scaling when scale signal has been emitted.
-
-
 
 var snap_limit: float = 20:
 	get: return Project.frame_to_timeline(snap_limit)
@@ -15,7 +11,7 @@ func _ready() -> void:
 	# Connecting signals
 	Project._on_timeline_scale_changed.connect(adjust_scaling)	
 	Project._is_resizing_clip.connect(resizing_clip)
-	mouse_exited.connect(remove_preview)
+	mouse_exited.connect(func()->void: preview.visible = false)
 
 	# Creating preview panel
 	preview = preload("res://resources/clip_preview.tscn").instantiate()
@@ -37,27 +33,34 @@ func adjust_scaling() -> void:
 
 
 func _can_drop_data(a_position: Vector2, a_data: Variant) -> bool:
-	var l_type: int = -1 
 	var l_duration: int = -1
 	var l_offset: int = -100
 
 	if typeof(a_data) == TYPE_INT:
-		l_type = Project.file_data[a_data].type
 		l_duration = Project.file_data[a_data].duration	
-		for l_snap_offset: int in snap_limit:
-			if _to_fit_or_not_to_fit(range(
-					Project.pos_to_frame(a_position.x - preview.size.x / 2) + l_snap_offset,
-					Project.pos_to_frame(a_position.x - preview.size.x / 2) + l_duration + l_snap_offset)):
-				l_offset = l_snap_offset
-				break
-			if _to_fit_or_not_to_fit(range(
-					Project.pos_to_frame(a_position.x - preview.size.x / 2) - l_snap_offset,
-					Project.pos_to_frame(a_position.x - preview.size.x / 2) + l_duration - l_snap_offset)):
-				l_offset = -l_snap_offset
-				break
+		preview.size.x = Project.frame_to_timeline(l_duration)
+		if Project.pos_to_frame(a_position.x) - (l_duration/2) < -snap_limit:
+			if _to_fit_or_not_to_fit(range(Project.pos_to_frame(l_duration))):
+				l_offset = abs(a_position.x - Project.frame_to_timeline(l_duration/2))
+		else:
+			for l_snap_offset: int in snap_limit:
+				print("Test")
+				if _to_fit_or_not_to_fit(range(
+						Project.pos_to_frame(a_position.x - preview.size.x / 2) + l_snap_offset,
+						Project.pos_to_frame(a_position.x - preview.size.x / 2) + l_duration + l_snap_offset)):
+					l_offset = l_snap_offset
+					break
+				if _to_fit_or_not_to_fit(range(
+						Project.pos_to_frame(a_position.x - preview.size.x / 2) - l_snap_offset,
+						Project.pos_to_frame(a_position.x - preview.size.x / 2) + l_duration - l_snap_offset)):
+					l_offset = -l_snap_offset
+					break
+			if l_offset == -100:
+				preview.visible = false
+				return false
 	elif a_data[0] == "CLIP":
-		l_type = Project.file_data[Project.clips[a_data[1]].file_id].type
-		l_duration = Project.file_data[Project.clips[a_data[1]].file_id].duration
+		l_duration = Project.clips[a_data[1]].duration
+		preview.size.x = Project.frame_to_timeline(l_duration)
 		var l_clip: ClipData = Project.clips[a_data[1]]
 		for l_snap_offset: int in snap_limit:
 			if _to_fit_or_not_to_fit(range(
@@ -72,22 +75,15 @@ func _can_drop_data(a_position: Vector2, a_data: Variant) -> bool:
 					Project.pos_to_frame(a_position.x - a_data[3]) + l_duration - l_snap_offset)):
 				l_offset = -l_snap_offset
 				break
+		if l_offset == -100:
+			preview.visible = false
+			return false
 	else:
-		remove_preview()
+		preview.visible = false
+		print(999)
 		return false
 
-	if l_offset == -100:
-		remove_preview()
-		return false
-	if l_type == File.VIDEO:
-		if typeof(a_data) == TYPE_INT:
-			preview.size.x = l_duration / Project.frame_to_timeline(Project._file_data[a_data][0].get_framerate() * Project.frame_rate)
-		elif a_data[0] == "CLIP":
-			preview.size.x = l_duration / Project.frame_to_timeline(Project._file_data[Project.clips[a_data[1]].file_id][0].get_framerate() * Project.frame_rate)
-	elif l_type == File.AUDIO:
-		preview.size.x = Project.frame_to_timeline(l_duration * Project.frame_rate)
-	else:
-		preview.size.x = Project.frame_to_timeline(l_duration)
+	preview.size.x = Project.frame_to_timeline(l_duration)
 
 	if typeof(a_data) == TYPE_INT:
 		set_preview(a_position.x - preview.size.x/2 + Project.frame_to_timeline(l_offset))
@@ -112,12 +108,10 @@ func set_preview(a_position: float) -> void:
 	preview.visible = true
 
 
-func remove_preview() -> void:
-	preview.visible = false
 
 
 func _drop_data(_position: Vector2, a_data: Variant) -> void:
-	remove_preview()
+	preview.visible = false
 
 	if typeof(a_data) == TYPE_INT:
 		var l_clip: ClipData = ClipData.new()
@@ -126,9 +120,9 @@ func _drop_data(_position: Vector2, a_data: Variant) -> void:
 		l_clip.duration = Project.file_data[l_clip.file_id].duration
 		add_new_clip(Project.add_clip(l_clip, get_index()))
 	else: # Array ["CLIP", clip id, clip object, mouse offset]
-		Project.remove_clip_timedata(a_data[2].get_track_id(), a_data[1])
-		Project.clips[a_data[1]].timeline_start = preview.position.x / Project.timeline_scale
-		Project.move_clip(a_data[1], a_data[2].position.x, a_data[2].get_track_id(), get_index())
+		Project.move_clip(a_data[1], 
+				a_data[2].position.x, Project.pos_to_frame(preview.position.x),
+				a_data[2].get_track_id(), get_index())
 		a_data[2].queue_free()
 		add_new_clip(a_data[1])
 	Project._set_frame_forced.emit()
@@ -145,55 +139,54 @@ func add_new_clip(a_clip_id: int) -> void:
 	add_child(l_clip)
 	Project._clip_nodes[a_clip_id] = l_clip
 	l_clip.name = str(a_clip_id)
-	Project.add_clip_timedata(get_index(), a_clip_id)
 
 
 func resizing_clip(a_clip_id: int, a_track_id: int, a_left: bool) -> void:
 	if a_track_id != get_index():
 		return
-	# TODO: Remember that we need to change Project.tracks[track_id][start_time]
-	# We could possibly do this with move_clip and just change the duration before that
-	# For video clips we need to change the start time in clip_data
-	if Project.file_data[Project.clips[a_clip_id].file_id].type == File.VIDEO:
-		print("VIDEO")
+	var l_type: int = Project.file_data[Project.clips[a_clip_id].file_id].type
+	if a_left:
+		var l_clip: ClipData = Project.clips[a_clip_id]
+		var l_duration: int = l_clip.duration + (l_clip.timeline_start - Project.pos_to_frame(get_local_mouse_position().x))
+		if l_duration < 1:
+			return
+		# TODO: VIDEO AND AUDIO CHECK
+		if l_type in [File.VIDEO, File.AUDIO]:
+			if l_clip.start_frame + (l_clip.timeline_start - Project.pos_to_frame(get_local_mouse_position().x)) > 0:
+				return
+		if !_to_fit_or_not_to_fit(range(
+				Project.pos_to_frame(get_local_mouse_position().x),
+				Project.pos_to_frame(get_local_mouse_position().x) + l_duration),
+				range(l_clip.timeline_start, l_clip.timeline_start + l_clip.duration),
+				get_index()):
+			return
+		if !_to_fit_or_not_to_fit(range(
+				Project.pos_to_frame(get_local_mouse_position().x), 
+				Project.pos_to_frame(get_local_mouse_position().x) + l_duration),
+				range(l_clip.timeline_start, l_clip.timeline_start + l_clip.duration),
+				get_index()):
+			return
+		Project._clip_nodes[a_clip_id].position.x = l_clip.timeline_start - (l_clip.timeline_start - Project.pos_to_frame(get_local_mouse_position().x))
+		Project._clip_nodes[a_clip_id].size.x = l_duration
+		await get_tree().process_frame
 	else:
-		if a_left:
-			var l_clip: ClipData = Project.clips[a_clip_id]
-			var l_duration: int = l_clip.duration + (l_clip.timeline_start - Project.pos_to_frame(get_local_mouse_position().x))
-			if l_duration < 1:
-				return
-			if !_to_fit_or_not_to_fit(range(
-					Project.pos_to_frame(get_local_mouse_position().x),
-					Project.pos_to_frame(get_local_mouse_position().x) + l_duration),
-					range(l_clip.timeline_start, l_clip.timeline_start + l_clip.duration),
-					get_index()):
-				return
-			if !_to_fit_or_not_to_fit(range(
-					Project.pos_to_frame(get_local_mouse_position().x), 
-					Project.pos_to_frame(get_local_mouse_position().x) + l_duration),
-					range(l_clip.timeline_start, l_clip.timeline_start + l_clip.duration),
-					get_index()):
-				return
-			Project._clip_nodes[a_clip_id].position.x = l_clip.timeline_start - (l_clip.timeline_start - Project.pos_to_frame(get_local_mouse_position().x))
-			Project._clip_nodes[a_clip_id].size.x = l_duration
-		else:
-			var l_clip: ClipData = Project.clips[a_clip_id]
-			var l_duration: int = pos_to_frame(get_local_mouse_position().x) - l_clip.timeline_start
-			if l_duration < 1:
-				return
-			if !_to_fit_or_not_to_fit(range(
-					Project.pos_to_frame(get_local_mouse_position().x),
-					Project.pos_to_frame(get_local_mouse_position().x) + l_duration),
-					range(l_clip.timeline_start, l_clip.timeline_start + l_clip.duration),
-					get_index()):
-				return
-			if !_to_fit_or_not_to_fit(range(
-					Project.pos_to_frame(get_local_mouse_position().x), 
-					Project.pos_to_frame(get_local_mouse_position().x) + l_duration),
-					range(l_clip.timeline_start, l_clip.timeline_start + l_clip.duration),
-					get_index()):
-				return
-			Project._clip_nodes[a_clip_id].size.x = l_duration
+		var l_clip: ClipData = Project.clips[a_clip_id]
+		var l_duration: int = Project.pos_to_frame(get_local_mouse_position().x) - l_clip.timeline_start
+		if l_duration < 1:
+			return
+		if !_to_fit_or_not_to_fit(range(
+				Project.pos_to_frame(get_local_mouse_position().x),
+				Project.pos_to_frame(get_local_mouse_position().x) + l_duration),
+				range(l_clip.timeline_start, l_clip.timeline_start + l_clip.duration),
+				get_index()):
+			return
+		if !_to_fit_or_not_to_fit(range(
+				Project.pos_to_frame(get_local_mouse_position().x), 
+				Project.pos_to_frame(get_local_mouse_position().x) + l_duration),
+				range(l_clip.timeline_start, l_clip.timeline_start + l_clip.duration),
+				get_index()):
+			return
+		Project._clip_nodes[a_clip_id].size.x = l_duration
 
 
 func reset_clip(a_clip_id: int) -> void:

@@ -10,6 +10,7 @@ var is_dragging: bool = false
 var previous_drag_time: int = 0
 
 var views: Array[TextureRect] = []
+var audio_players: Array[AudioStreamPlayer] = []
 var current_clips: Array[ClipData] = []
 
 var current_frame: int = -1
@@ -19,6 +20,7 @@ var current_frame: int = -1
 func _ready() -> void:
 	Project._on_project_loaded.connect(func() -> void:
 			views = []
+			audio_players = []
 			current_clips = []
 			set_frame_forced()
 			%ViewSubViewport.size = Project.resolution)
@@ -48,7 +50,7 @@ func _process(a_delta: float) -> void:
 		if get_current_frame_nr() >= Project.get_end_frame_pts():
 			if is_dragging:
 				return
-			is_playing = !is_playing
+			_on_play_pause_button_pressed()
 		else:
 			set_frame()
 
@@ -65,6 +67,12 @@ func _on_play_pause_button_pressed():
 		else: 
 			add_view()
 	is_playing = !is_playing
+	for l_player: AudioStreamPlayer in audio_players:
+		if !is_playing:
+			l_player.set_stream_paused(true)
+		else:
+			l_player.set_stream_paused(false)
+
 	time_elapsed = 0.
 
 
@@ -84,11 +92,17 @@ func add_view() -> void:
 	%ViewSubViewport.move_child(views[l_id], 0)
 	current_clips.append(null)
 
+	audio_players.append(AudioStreamPlayer.new())
+	%AudioPlayers.add_child(audio_players[l_id])
+	%AudioPlayers.move_child(audio_players[l_id], 0)
+	current_clips.append(null)
+
 
 func remove_view() -> void:
 	# TODO: Add an integer so a specific view can be removed + add line which also removes the view	
 	views.pop_back()
 	current_clips.pop_back()
+	audio_players.pop_back()
 
 
 func set_frame_forced() -> void:
@@ -105,12 +119,17 @@ func set_frame(a_frame_nr: int = get_current_frame_nr(), a_force: bool = false) 
 			# Check if clip is loaded
 			if current_clips[l_track_id] == null: # Find which clip is there
 				current_clips[l_track_id] = get_clip_from_raw(l_track_id, a_frame_nr)
-			if current_clips[l_track_id] == null:
-				return
+				if current_clips[l_track_id] == null:
+					return
+			var l_same: bool = current_clips[l_track_id].clip_id == get_clip_from_raw(l_track_id, a_frame_nr).clip_id
+				
 
 			var l_type: int = Project.file_data[current_clips[l_track_id].file_id].type
 			if l_type == File.VIDEO:
 				_set_video_clip_frame(l_track_id, a_frame_nr)
+				_set_video_audio_frame(l_track_id, a_frame_nr, l_same)
+			elif l_type == File.AUDIO:
+				_set_audio_frame(l_track_id, a_frame_nr, l_same)
 			elif l_type == File.IMAGE:
 				_set_image_clip_frame(l_track_id)
 			elif l_type == File.COLOR:
@@ -118,6 +137,7 @@ func set_frame(a_frame_nr: int = get_current_frame_nr(), a_force: bool = false) 
 		else:
 			# Clear previous frame
 			views[l_track_id].texture = null
+			audio_players[l_track_id].stream = null
 			current_clips[l_track_id] = null
 
 
@@ -125,6 +145,29 @@ func _set_video_clip_frame(a_track_id: int, a_frame_nr: int) -> void:
 	if Project._file_data[current_clips[a_track_id].file_id][a_track_id].next_frame_available(
 		a_frame_nr, current_clips[a_track_id]) or views[a_track_id].texture == null: 
 		views[a_track_id].texture = Project._file_data[current_clips[a_track_id].file_id][a_track_id].get_video_frame(is_playing)
+		audio_players[a_track_id].stream = Project._file_data[current_clips[a_track_id].file_id][0].get_audio()
+
+
+func _set_video_audio_frame(a_track_id: int, a_frame_nr: int, l_same: bool) -> void:
+	if !l_same or audio_players[a_track_id].stream == null:
+		audio_players[a_track_id].stream = Project._file_data[current_clips[a_track_id].file_id][0].get_audio()
+	if !audio_players[a_track_id].playing:
+		if is_playing:
+			audio_players[a_track_id].play()
+			audio_players[a_track_id].set_stream_paused(false)
+		a_frame_nr -= current_clips[a_track_id].timeline_start + current_clips[a_track_id].start_frame
+		audio_players[a_track_id].seek((a_frame_nr / Project.frame_rate) - (1 / Project.frame_rate))
+
+
+func _set_audio_frame(a_track_id: int, a_frame_nr: int, l_same: bool) -> void:
+	if !l_same or audio_players[a_track_id].stream == null:
+		audio_players[a_track_id].stream = Project._file_data[current_clips[a_track_id].file_id]
+	if !audio_players[a_track_id].playing:
+		if is_playing:
+			audio_players[a_track_id].play()
+			audio_players[a_track_id].set_stream_paused(false)
+		a_frame_nr -= current_clips[a_track_id].timeline_start + current_clips[a_track_id].start_frame
+		audio_players[a_track_id].seek((a_frame_nr / Project.frame_rate) - (1 / Project.frame_rate))
 
 
 func _set_image_clip_frame(a_track_id: int) -> void:
@@ -137,7 +180,7 @@ func _set_color_clip_frame(a_track_id: int) -> void:
 		
 
 func get_clip_from_raw(a_track_id: int, a_frame_nr: int) -> ClipData:
-	for l_i: int in range(a_frame_nr):
+	for l_i: int in range(a_frame_nr + 1):
 		if Project.tracks[a_track_id].has(a_frame_nr - l_i):
 			return Project.clips[Project.tracks[a_track_id][a_frame_nr - l_i]]
 	printerr("Couldn't get clip!")
