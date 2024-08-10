@@ -40,13 +40,8 @@ var resolution: Vector2i = Vector2i(1920, 1080)
 
 
 func _ready() -> void:
-	var l_args: PackedStringArray = OS.get_cmdline_args()
-	for l_arg: String in l_args:
-		if l_arg.get_extension() == "gozen":
-			load_project(l_arg)
-			break
-	get_window().files_dropped.connect(_on_files_dropped)
-	
+	get_window().files_dropped.connect(Project._on_files_dropped)
+
 	# Preparing tracks
 	for _i: int in Settings.default_tracks:
 		tracks.append({})

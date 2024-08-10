@@ -1,0 +1,28 @@
+name: Release build
+run-name: Release build!
+on: [workflow_dispatch]
+jobs:
+  linux-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # Godot stuff
+      - name: Install Godot
+        run: sudo apt-get update && sudo apt-get install godot
+      - name: Import files in project # Use --import from godot version 4.3+
+        run: godot -q project_path -e --quit-after 5 --headless
+      
+      # Building
+      - name: Build Linux Release video only
+        run: scons -Q -j4 target=template_release platform=linux arch=x86_64 use_system=yes
+
+      # Packing things up
+      - name: Uploading GDExtension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gde_gozen-linux-release-video-only
+          path: bin/linux_video_only_template_release/*

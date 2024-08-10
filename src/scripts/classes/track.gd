@@ -28,8 +28,8 @@ func load_project() -> void:
 func adjust_scaling() -> void: 
 	for l_clip: PanelContainer in get_children():
 		if not l_clip.name.begins_with('_'): # Preview container
-			l_clip.size.x = Project.frame_to_timeline(Project.clips[l_clip.name.to_int()].duration)
-			l_clip.position.x = Project.frame_to_timeline(Project.clips[l_clip.name.to_int()].timeline_start)
+			l_clip.size.x = Project.frame_to_timeline(Project.clips[l_clip.clip_id].duration)
+			l_clip.position.x = Project.frame_to_timeline(Project.clips[l_clip.clip_id].timeline_start)
 
 
 func _can_drop_data(a_position: Vector2, a_data: Variant) -> bool:
@@ -40,6 +40,7 @@ func _can_drop_data(a_position: Vector2, a_data: Variant) -> bool:
 		l_duration = Project.file_data[a_data].duration	
 		preview.size.x = Project.frame_to_timeline(l_duration)
 		if Project.pos_to_frame(a_position.x) - (l_duration/2) < -snap_limit:
+			print("+)))")
 			if _to_fit_or_not_to_fit(range(Project.pos_to_frame(l_duration))):
 				l_offset = abs(a_position.x - Project.frame_to_timeline(l_duration/2))
 		else:
