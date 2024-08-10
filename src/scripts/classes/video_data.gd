@@ -41,3 +41,7 @@ func get_total_frame_nr() -> int:
 
 func get_framerate() -> float:
 	return video_data.get_framerate()
+
+
+func get_audio() -> AudioStream:
+	return video_data.get_audio()

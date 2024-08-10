@@ -198,11 +198,11 @@ func resize_clip(a_clip_id: int, a_track_id: int, a_left: bool) -> void:
 
 
 func pos_to_frame(a_pos: float) -> int:
-	return roundi(a_pos / Project.timeline_scale)
+	return roundi(a_pos / timeline_scale)
 
 
 func frame_to_timeline(a_frame_nr) -> float:
-	return a_frame_nr * Project.timeline_scale
+	return a_frame_nr * timeline_scale
 
 
 	

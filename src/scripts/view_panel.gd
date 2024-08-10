@@ -145,7 +145,6 @@ func _set_video_clip_frame(a_track_id: int, a_frame_nr: int) -> void:
 	if Project._file_data[current_clips[a_track_id].file_id][a_track_id].next_frame_available(
 		a_frame_nr, current_clips[a_track_id]) or views[a_track_id].texture == null: 
 		views[a_track_id].texture = Project._file_data[current_clips[a_track_id].file_id][a_track_id].get_video_frame(is_playing)
-		audio_players[a_track_id].stream = Project._file_data[current_clips[a_track_id].file_id][0].get_audio()
 
 
 func _set_video_audio_frame(a_track_id: int, a_frame_nr: int, l_same: bool) -> void:
@@ -185,7 +184,6 @@ func get_clip_from_raw(a_track_id: int, a_frame_nr: int) -> ClipData:
 			return Project.clips[Project.tracks[a_track_id][a_frame_nr - l_i]]
 	printerr("Couldn't get clip!")
 	return null
-
 
 
 func playhead_moved(a_dragging: bool) -> void:

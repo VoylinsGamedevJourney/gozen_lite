@@ -44,7 +44,6 @@ func _can_drop_data(a_position: Vector2, a_data: Variant) -> bool:
 				l_offset = abs(a_position.x - Project.frame_to_timeline(l_duration/2))
 		else:
 			for l_snap_offset: int in snap_limit:
-				print("Test")
 				if _to_fit_or_not_to_fit(range(
 						Project.pos_to_frame(a_position.x - preview.size.x / 2) + l_snap_offset,
 						Project.pos_to_frame(a_position.x - preview.size.x / 2) + l_duration + l_snap_offset)):
@@ -80,7 +79,6 @@ func _can_drop_data(a_position: Vector2, a_data: Variant) -> bool:
 			return false
 	else:
 		preview.visible = false
-		print(999)
 		return false
 
 	preview.size.x = Project.frame_to_timeline(l_duration)
@@ -105,9 +103,9 @@ func _to_fit_or_not_to_fit(a_range: Array, a_excluded_range: Array = [], a_exclu
 
 func set_preview(a_position: float) -> void:
 	preview.position.x = Project.frame_to_timeline(Project.pos_to_frame(a_position))
+	if preview.position.x < 0:
+		preview.position.x = 0
 	preview.visible = true
-
-
 
 
 func _drop_data(_position: Vector2, a_data: Variant) -> void:
