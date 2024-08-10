@@ -11,7 +11,8 @@ func _ready() -> void:
 	instance = self
 
 
-static func show_file_effects(a_file_id: int) -> void:
+static func show_file_effects(_file_id: int) -> void:
+	# TODO: Make this work
 	# Already connected to file buttons!
 	pass #print(a_file_id)
 

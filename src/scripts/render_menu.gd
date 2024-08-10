@@ -8,7 +8,6 @@ var audio_codecs: Array = []
 func _ready() -> void:
 	var l_supported_codecs: Dictionary = Renderer.get_supported_codecs()
 	for l_entry: String in l_supported_codecs.video:
-		var l_id: int = video_codecs.size()
 		video_codecs.append(l_supported_codecs.video[l_entry].codec_id)
 		if l_supported_codecs.video[l_entry].hardware_accel:
 			%VideoCodecOptionButton.add_item(l_entry + '*')

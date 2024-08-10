@@ -319,6 +319,7 @@ theme_override_constants/separation = 0
 [node name="Playhead" type="Panel" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll/TimelineMain"]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0.501961)
+custom_minimum_size = Vector2(3, 2000)
 layout_mode = 0
 offset_right = 3.0
 offset_bottom = 2000.0

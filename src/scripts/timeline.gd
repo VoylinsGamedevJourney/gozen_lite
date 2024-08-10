@@ -1,6 +1,9 @@
 class_name Timeline extends PanelContainer
 
 
+const TIMELINE_PADDING: int = 2000
+
+
 static var is_clip_being_moved: bool = false
 static var is_playhead_being_moved: bool = false
 
@@ -13,6 +16,7 @@ func _ready() -> void:
 	load_defaults()
 	call_deferred("update_timeline")
 	Project._on_project_loaded.connect(load_project)
+	Project._update_timeline.connect(update_timeline)
 
 
 func _process(_delta: float) -> void:
@@ -21,6 +25,8 @@ func _process(_delta: float) -> void:
 		if l_temp < 0:
 			l_temp = 0.0
 		%Playhead.position.x = snappedf(l_temp, Project.timeline_scale)- Project.timeline_scale
+		if %Playhead.position.x < 0:
+			%Playhead.position.x = 0
 		Project._playhead_moved.emit(true)
 
 
@@ -57,14 +63,14 @@ func update_timeline() -> void:
 	Project.set_timeline_scale(Project.timeline_scale)
 
 	# Resizing the timeline
-	if (Project.get_end_frame_pts() + 8000) * Project.timeline_scale < %MainTimelineScroll.size.x:
+	if (Project.get_end_frame_pts() + TIMELINE_PADDING) * Project.timeline_scale < %MainTimelineScroll.size.x:
 		%TimelineMainVBox.get_parent().custom_minimum_size.x = %MainTimelineScroll.size.x
 		%TimelineMainVBox.custom_minimum_size.x = %MainTimelineScroll.size.x
 		%TimelineMainVBox.size.x = %MainTimelineScroll.size.x
 	else:
-		%TimelineMainVBox.get_parent().custom_minimum_size.x = (Project.get_end_frame_pts() + 8000) * Project.timeline_scale
-		%TimelineMainVBox.custom_minimum_size.x = (Project.get_end_frame_pts() + 8000) * Project.timeline_scale
-		%TimelineMainVBox.size.x = (Project.get_end_frame_pts() + 8000) * Project.timeline_scale
+		%TimelineMainVBox.get_parent().custom_minimum_size.x = (Project.get_end_frame_pts() + TIMELINE_PADDING) * Project.timeline_scale
+		%TimelineMainVBox.custom_minimum_size.x = (Project.get_end_frame_pts() + TIMELINE_PADDING) * Project.timeline_scale
+		%TimelineMainVBox.size.x = (Project.get_end_frame_pts() + TIMELINE_PADDING) * Project.timeline_scale
 
 	# Setting the scroll_horizontal correct
 	if %MainTimelineScroll.scroll_horizontal != 0: 
@@ -73,8 +79,8 @@ func update_timeline() -> void:
 		%MainTimelineScroll.scroll_horizontal = abs(l_new_scroll - l_scroll_offset) # (pre_zoom[1]/pre_zoom[2]*timeline_scale)#-(pre_zoom[0]-pre_zoom[1])
 
 	# Changing playhead to correct position
-	if %Playhead.position.x != 0:
-		%Playhead.position.x = %Playhead.position.x/pre_zoom[2]*Project.timeline_scale
+	if %Playhead.position.x != 0 and pre_zoom[2] != 0:
+		%Playhead.position.x = %Playhead.position.x / pre_zoom[2] * Project.timeline_scale
 
 
 func load_defaults() -> void:

@@ -54,6 +54,8 @@ grow_vertical = 2
 mouse_filter = 1
 mouse_default_cursor_shape = 10
 
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+
 [connection signal="resized" from="." to="." method="_on_resized"]
 [connection signal="button_down" from="Button" to="." method="_on_button_button_down"]
 [connection signal="button_up" from="Button" to="." method="_on_button_button_up"]

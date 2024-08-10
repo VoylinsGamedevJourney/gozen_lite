@@ -95,6 +95,8 @@ func add_view() -> void:
 	audio_players.append(AudioStreamPlayer.new())
 	%AudioPlayers.add_child(audio_players[l_id])
 	%AudioPlayers.move_child(audio_players[l_id], 0)
+	audio_players[audio_players.size()-1].set_stream_paused(true)
+	audio_players[audio_players.size()-1].set_autoplay(true)
 	current_clips.append(null)
 
 
@@ -117,19 +119,20 @@ func set_frame(a_frame_nr: int = get_current_frame_nr(), a_force: bool = false) 
 	for l_track_id: int in Project.tracks.size():
 		if a_frame_nr in Project._track_data[l_track_id]:
 			# Check if clip is loaded
+			var l_new_clip: bool = false
 			if current_clips[l_track_id] == null: # Find which clip is there
 				current_clips[l_track_id] = get_clip_from_raw(l_track_id, a_frame_nr)
+				l_new_clip = true
 				if current_clips[l_track_id] == null:
 					return
-			var l_same: bool = current_clips[l_track_id].clip_id == get_clip_from_raw(l_track_id, a_frame_nr).clip_id
 				
 
 			var l_type: int = Project.file_data[current_clips[l_track_id].file_id].type
 			if l_type == File.VIDEO:
 				_set_video_clip_frame(l_track_id, a_frame_nr)
-				_set_video_audio_frame(l_track_id, a_frame_nr, l_same)
+				_set_audio_frame(l_track_id, a_frame_nr, l_new_clip, true)
 			elif l_type == File.AUDIO:
-				_set_audio_frame(l_track_id, a_frame_nr, l_same)
+				_set_audio_frame(l_track_id, a_frame_nr, l_new_clip, false)
 			elif l_type == File.IMAGE:
 				_set_image_clip_frame(l_track_id)
 			elif l_type == File.COLOR:
@@ -143,30 +146,27 @@ func set_frame(a_frame_nr: int = get_current_frame_nr(), a_force: bool = false) 
 
 func _set_video_clip_frame(a_track_id: int, a_frame_nr: int) -> void:
 	if Project._file_data[current_clips[a_track_id].file_id][a_track_id].next_frame_available(
-		a_frame_nr, current_clips[a_track_id]) or views[a_track_id].texture == null: 
+			a_frame_nr, current_clips[a_track_id]) or views[a_track_id].texture == null: 
 		views[a_track_id].texture = Project._file_data[current_clips[a_track_id].file_id][a_track_id].get_video_frame(is_playing)
 
 
-func _set_video_audio_frame(a_track_id: int, a_frame_nr: int, l_same: bool) -> void:
-	if !l_same or audio_players[a_track_id].stream == null:
-		audio_players[a_track_id].stream = Project._file_data[current_clips[a_track_id].file_id][0].get_audio()
-	if !audio_players[a_track_id].playing:
-		if is_playing:
-			audio_players[a_track_id].play()
-			audio_players[a_track_id].set_stream_paused(false)
-		a_frame_nr -= current_clips[a_track_id].timeline_start + current_clips[a_track_id].start_frame
-		audio_players[a_track_id].seek((a_frame_nr / Project.frame_rate) - (1 / Project.frame_rate))
+func _set_audio_frame(a_track_id: int, a_frame_nr: int, a_new: bool, a_video: bool) -> void:
+	if a_new or audio_players[a_track_id].stream == null:
+		if a_video:
+			audio_players[a_track_id].stream = Project._file_data[current_clips[a_track_id].file_id][0].get_audio()
+		else:	
+			audio_players[a_track_id].stream = Project._file_data[current_clips[a_track_id].file_id]
+	_seek_audio(a_track_id, a_frame_nr)
 
 
-func _set_audio_frame(a_track_id: int, a_frame_nr: int, l_same: bool) -> void:
-	if !l_same or audio_players[a_track_id].stream == null:
-		audio_players[a_track_id].stream = Project._file_data[current_clips[a_track_id].file_id]
-	if !audio_players[a_track_id].playing:
-		if is_playing:
-			audio_players[a_track_id].play()
-			audio_players[a_track_id].set_stream_paused(false)
+func _seek_audio(a_track_id: int, a_frame_nr: int) -> void:
+	if is_playing and !audio_players[a_track_id].playing:
+		audio_players[a_track_id].play()
+	if !is_playing:
 		a_frame_nr -= current_clips[a_track_id].timeline_start + current_clips[a_track_id].start_frame
+		audio_players[a_track_id].set_stream_paused(false) # Seeking does not work when paused
 		audio_players[a_track_id].seek((a_frame_nr / Project.frame_rate) - (1 / Project.frame_rate))
+		audio_players[a_track_id].set_stream_paused(!is_playing)
 
 
 func _set_image_clip_frame(a_track_id: int) -> void:
@@ -192,10 +192,14 @@ func playhead_moved(a_dragging: bool) -> void:
 		is_dragging = a_dragging
 		was_playing = is_playing
 		is_playing = false
-	if abs(abs(get_current_frame_nr())-abs(current_frame)) < 20 or previous_drag_time + 100 <= Time.get_ticks_msec():
+		for l_player: AudioStreamPlayer in audio_players:
+			l_player.set_stream_paused(true)
+	if abs(abs(get_current_frame_nr())-abs(current_frame)) < 20 or previous_drag_time + 300 <= Time.get_ticks_msec():
 		previous_drag_time = Time.get_ticks_msec()
 		set_frame_forced()
 	if !a_dragging:
 		is_dragging = false
 		is_playing = was_playing
+		for l_player: AudioStreamPlayer in audio_players:
+			l_player.set_stream_paused(!is_playing)
 

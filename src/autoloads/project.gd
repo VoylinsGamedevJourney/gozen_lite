@@ -8,6 +8,7 @@ signal _on_project_loaded
 signal _on_file_added(file_id: int)
 
 signal _on_timeline_scale_changed
+signal _update_timeline
 
 signal _set_frame(frame_nr)
 signal _set_frame_forced
@@ -250,8 +251,11 @@ func add_clip_timedata(a_track_id: int, a_clip_id: int) -> void:
 		clips[a_clip_id].timeline_start, 
 		clips[a_clip_id].timeline_start + clips[a_clip_id].duration))
 
+	_update_timeline.emit()
+
 
 func remove_clip_timedata(a_track_id: int, a_clip_id: int) -> void:
 	for l_i: int in range(clips[a_clip_id].timeline_start, clips[a_clip_id].timeline_start + clips[a_clip_id].duration):
 		_track_data[a_track_id].remove_at(_track_data[a_track_id].rfind(l_i))
+	_update_timeline.emit()
 
