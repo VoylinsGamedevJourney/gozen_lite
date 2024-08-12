@@ -122,6 +122,7 @@ func load_data(a_path: String) -> int:
 			return l_file.get_error()
 
 		l_file.close()
+		return OK
 	return ERR_FILE_NOT_FOUND
 
 
@@ -142,6 +143,7 @@ func load_data_compressed(a_path: String, a_compression: int) -> int:
 			return l_file.get_error()
 
 		l_file.close()
+		return OK
 	return ERR_FILE_NOT_FOUND
 
 
@@ -162,6 +164,7 @@ func load_data_encrypted(a_path: String, a_key: PackedByteArray) -> int:
 			return l_file.get_error()
 
 		l_file.close()
+		return OK
 	return ERR_FILE_NOT_FOUND
 
 
@@ -181,5 +184,6 @@ func load_data_encrypted_with_pass(a_path: String, a_pass: String) -> int:
 			return l_file.get_error()
 
 		l_file.close()
+		return OK
 	return ERR_FILE_NOT_FOUND
 

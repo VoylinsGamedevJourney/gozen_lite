@@ -6,6 +6,9 @@ enum { PROJECT, TOOLS, HELP }
 
 var menu: Array[PopupMenu] = []
 
+var err: int = 0
+
+
 
 func _ready() -> void:
 	add_main_menu("Project")
@@ -23,7 +26,9 @@ func _ready() -> void:
 	menu[PROJECT].add_item("Render project (Ctrl+Enter)")
 	menu[PROJECT].add_separator()
 	menu[PROJECT].add_item("Close editor (Ctrl+Q)")
-	menu[PROJECT].id_pressed.connect(_on_menu_project_id_pressed)
+	err = menu[PROJECT].id_pressed.connect(_on_menu_project_id_pressed)
+	if err:
+		printerr("Error connecting id_pressed in menu bar!")
 
 	# Setting up Tools popup
 	menu[TOOLS].add_item("Settings")
@@ -46,7 +51,7 @@ func add_main_menu(a_name: String) -> void:
 func _on_menu_project_id_pressed(a_id: int) -> void:
 	match a_id:
 		0: # New project
-			Project.reset()
+			Project.reset_project()
 		1: # Open project
 			print("Not implemented yet!") # TODO: WWe need the popup handler for this to work
 			#Project.open_project()

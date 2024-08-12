@@ -7,15 +7,21 @@ const TIMELINE_PADDING: int = 2000
 static var is_clip_being_moved: bool = false
 static var is_playhead_being_moved: bool = false
 
+
 var end_frame_pts: int = 0
 var pre_zoom: Array = [0,0,0] # local mouse position, scroll position, previous timeline_scale
+
+var err: int = 0
 
 
 
 func _ready() -> void:
-	Project._on_project_loaded.connect(load_project)
-	Project._update_timeline.connect(update_timeline)
-	Project._on_end_frame_pts_changed.connect(func(a_value): end_frame_pts = a_value)
+	err = Project._on_project_loaded.connect(load_project)
+	err += Project._update_timeline.connect(update_timeline)
+	err += Project._on_end_frame_pts_changed.connect(
+			func(a_value: int) -> void: end_frame_pts = a_value)
+	if err:
+		printerr("Connecting functions failed in Timeline!")
 
 	load_defaults()
 	_set_pre_zoom()
@@ -24,14 +30,14 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	if is_playhead_being_moved and !is_clip_being_moved:
-		var l_temp: float = %TimelineBox.get_local_mouse_position().x
+		var l_temp: float = (%TimelineBox as TimelineBox).get_local_mouse_position().x
 
 		if l_temp < 0:
 			l_temp = 0.0
 
-		%Playhead.position.x = snappedf(l_temp, Project.timeline_scale)- Project.timeline_scale
-		if %Playhead.position.x < 0:
-			%Playhead.position.x = 0
+		(%Playhead as Panel).position.x = snappedf(l_temp, Project.timeline_scale)- Project.timeline_scale
+		if (%Playhead as Panel).position.x < 0:
+			(%Playhead as Panel).position.x = 0
 
 		Project._playhead_moved.emit(true)
 
@@ -50,7 +56,8 @@ func load_project() -> void:
 	
 	for l_track: int in Project.tracks.size():
 		for l_clip_pts: int in Project.tracks[l_track]:
-			%TimelineBox.add_new_clip(Project.tracks[l_track][l_clip_pts])
+			var l_cli_id: int = Project.tracks[l_track][l_clip_pts]
+			(%TimelineBox as TimelineBox).add_new_clip(l_cli_id)
 
 
 func _reset() -> void:
@@ -67,7 +74,7 @@ func _reset() -> void:
 #------------------------------------------------ INPUT FUNCTIONS
 func _on_timeline_box_gui_input(a_event:InputEvent) -> void:
 	if a_event is InputEventMouseButton:
-		if a_event.button_index == MOUSE_BUTTON_LEFT:
+		if (a_event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
 			if a_event.is_released():
 				is_playhead_being_moved = false
 				Project._playhead_moved.emit(false)
@@ -89,18 +96,18 @@ func _on_timeline_box_gui_input(a_event:InputEvent) -> void:
 
 
 func _on_main_timeline_scroll_gui_input(a_event:InputEvent) -> void:
-	if a_event.ctrl_pressed:
+	if (a_event as InputEventWithModifiers).ctrl_pressed:
 		get_viewport().set_input_as_handled()
 
 
-func _on_side_panel_resized():
-	$VBox/TopHBox/Left.custom_minimum_size.x = $VBox/BottomHBox/SidePanel.size.x
+func _on_side_panel_resized() -> void:
+	($VBox/TopHBox/Left as Control).custom_minimum_size.x = ($VBox/BottomHBox/SidePanel as PanelContainer).size.x
 
 
 #------------------------------------------------ TIMELINE HANDLING FUNCTIONS
 func _set_pre_zoom() -> void:
-	pre_zoom[0] = %TimelineBox.get_local_mouse_position().x
-	pre_zoom[1] = %MainTimelineScroll.scroll_horizontal
+	pre_zoom[0] = (%TimelineBox as TimelineBox).get_local_mouse_position().x
+	pre_zoom[1] = (%MainTimelineScroll as ScrollContainer).scroll_horizontal
 	pre_zoom[2] = Project.timeline_scale
 
 
@@ -113,20 +120,20 @@ func update_timeline() -> void:
 		Project.set_timeline_scale(Project.timeline_scale)
 
 	# Resizing the timeline
-	if (Project.get_end_frame_pts() + TIMELINE_PADDING) * Project.timeline_scale < %MainTimelineScroll.size.x:
-		%TimelineBox.custom_minimum_size.x = %MainTimelineScroll.size.x
+	if (Project.get_end_frame_pts() + TIMELINE_PADDING) * Project.timeline_scale < (%MainTimelineScroll as ScrollContainer).size.x:
+		(%TimelineBox as TimelineBox).custom_minimum_size.x = (%MainTimelineScroll as ScrollContainer).size.x
 	else:
-		%TimelineBox.custom_minimum_size.x = (Project.get_end_frame_pts() + TIMELINE_PADDING) * Project.timeline_scale
+		(%TimelineBox as TimelineBox).custom_minimum_size.x = (Project.get_end_frame_pts() + TIMELINE_PADDING) * Project.timeline_scale
 
 	# Setting the scroll_horizontal correct
-	if %MainTimelineScroll.scroll_horizontal != 0: 
+	if (%MainTimelineScroll as ScrollContainer).scroll_horizontal != 0: 
 		var l_scroll_offset: int = pre_zoom[0] - pre_zoom[1]
-		var l_new_scroll: int = roundi(roundi(pre_zoom[0] / pre_zoom[2]) * Project.timeline_scale)
-		%MainTimelineScroll.scroll_horizontal = abs(l_new_scroll - l_scroll_offset) # (pre_zoom[1]/pre_zoom[2]*timeline_scale)#-(pre_zoom[0]-pre_zoom[1])
+		var l_new_scroll: int = round(round(pre_zoom[0] / pre_zoom[2]) * Project.timeline_scale)
+		(%MainTimelineScroll as ScrollContainer).scroll_horizontal = abs(l_new_scroll - l_scroll_offset) # (pre_zoom[1]/pre_zoom[2]*timeline_scale)#-(pre_zoom[0]-pre_zoom[1])
 
 	# Changing playhead to correct position
-	if %Playhead.position.x != 0 and pre_zoom[2] != 0:
-		%Playhead.position.x = %Playhead.position.x / pre_zoom[2] * Project.timeline_scale
+	if (%Playhead as Panel).position.x != 0 and pre_zoom[2] != 0:
+		(%Playhead as Panel).position.x = (%Playhead as Panel).position.x / pre_zoom[2] * Project.timeline_scale
 
 
 #------------------------------------------------ TRACK HANDLING FUNCTIONS
@@ -168,7 +175,4 @@ func _create_header() -> PanelContainer:
 	l_panel.add_child(l_hbox)
 
 	return l_panel
-
-
-
 

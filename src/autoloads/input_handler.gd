@@ -23,7 +23,7 @@ func _input(a_event: InputEvent) -> void:
 	#	Project.open_project()
 	if a_event.is_action_pressed("project_new"):
 		# TODO: show popup message to agree and possibly save unsaved changes
-		Project.reset()
+		Project.reset_project()
 	if a_event.is_action_pressed("open_render_menu"):
 		print("Not implemented yet!")
 
@@ -37,7 +37,7 @@ func _input(a_event: InputEvent) -> void:
 
 	# Timeline stuff
 	if a_event.is_action_pressed("delete") and Clip.selected_clips.size() != 0:
-		for l_clip: PanelContainer in Clip.selected_clips:
+		for l_clip: Clip in Clip.selected_clips:
 			Project.remove_clip(l_clip.id)
 			l_clip.queue_free()
 			await RenderingServer.frame_post_draw
@@ -61,12 +61,13 @@ func redo_action() -> void:
 func do(a_function: Callable, a_undo_function: Callable, a_do_args: Array = [], a_undo_args: Array = []) -> void:
 	var l_action: Action = Action.new(a_function, a_undo_function, a_do_args, a_undo_args)
 	a_function.call(a_do_args)
-	if actions.size() == Settings.actions_max:
+	if actions.size() == Settings.action_size:
 		actions.pop_front()
 		actions.append(l_action)
 		return
 	elif actions.size() != action_current:
-		actions.resize(action_current + 1)
+		if actions.resize(action_current + 1):
+			printerr("Couldn't resize actions!")
 	action_current += 1
 	actions.append(l_action)
 

@@ -6,11 +6,14 @@ var video_data: Video
 var current_frame: int = -1 # Current frame from timeline
 var video_frame_nr: int = 0 # Current frame from video file
 var frame_skip: int = 0 # Amount of frame number difference
+var err: int = 0
 
 
 func open_video(a_path: String, load_audio: bool) -> void:
 	video_data = Video.new()
-	video_data.open_video(a_path, load_audio)
+	err = video_data.open_video(a_path, load_audio)
+	if err:
+		printerr("Something went wrong opening video file!", err)
 
 
 func get_video_frame(a_is_playing: bool) -> ImageTexture:
@@ -22,7 +25,7 @@ func get_video_frame(a_is_playing: bool) -> ImageTexture:
 			if l_i + 1 == frame_skip:
 				video_frame_nr = current_frame
 				return ImageTexture.create_from_image(video_data.next_frame())
-			video_data.next_frame()
+			video_data.next_frame().free()
 	printerr("Something went wrong fetching video frame")
 	return null
 

@@ -15,14 +15,19 @@ var views: Array[TextureRect] = []
 var audio_players: Array[AudioStreamPlayer] = []
 var current_clips: Array[ClipData] = []
 
+var err: int = 0
+
 
 
 func _ready() -> void:
-	Project._on_project_loaded.connect(_setup)
-	Project._set_frame_forced.connect(set_frame_forced)
-	Project._playhead_moved.connect(playhead_moved)
-	Project._set_frame.connect(set_frame)
-	Project._on_end_frame_pts_changed.connect(func(a_value): end_frame_pts = a_value)
+	err = Project._on_project_loaded.connect(_setup)
+	err += Project._set_frame_forced.connect(set_frame_forced)
+	err += Project._playhead_moved.connect(playhead_moved)
+	err += Project._set_frame.connect(set_frame)
+	err += Project._on_end_frame_pts_changed.connect(
+			func(a_value: int) -> void: end_frame_pts = a_value)
+	if err:
+		printerr("Problem occurred connecting functions in view panel!")
 
 	_setup()
 
@@ -36,7 +41,7 @@ func _setup() -> void:
 		add_view()
 
 	set_frame_forced()
-	%ViewSubViewport.size = Project.resolution
+	(%ViewSubViewport as SubViewport).size = Project.resolution
 
 	
 		
@@ -53,7 +58,7 @@ func _process(a_delta: float) -> void:
 		
 		while time_elapsed >= 1. / Project.frame_rate:
 			time_elapsed -= 1. / Project.frame_rate
-			%Playhead.position.x += Project.timeline_scale
+			(%Playhead as Panel).position.x += Project.timeline_scale
 		
 		if get_current_frame_nr() >= end_frame_pts:
 			if is_dragging:
@@ -64,10 +69,10 @@ func _process(a_delta: float) -> void:
 
 
 func get_current_frame_nr() -> int:
-	return roundi(%Playhead.position.x / Project.timeline_scale)
+	return roundi((%Playhead as Panel).position.x / Project.timeline_scale)
 
 
-func _on_play_pause_button_pressed():
+func _on_play_pause_button_pressed() -> void:
 	if current_frame >= end_frame_pts:
 		return
 
@@ -88,11 +93,11 @@ func _on_play_pause_button_pressed():
 	time_elapsed = 0.
 
 
-func _on_forward_button_pressed():
+func _on_forward_button_pressed() -> void:
 	pass # TODO: Replace with function body.
 
 
-func _on_rewind_button_pressed():
+func _on_rewind_button_pressed() -> void:
 	pass # TODO: Replace with function body.
 
 
@@ -139,7 +144,7 @@ func set_frame(a_frame_nr: int = get_current_frame_nr(), a_force: bool = false) 
 					return
 				
 
-			var l_type: int = Project.file_data[current_clips[l_track_id].file_id].type
+			var l_type: int = Project.get_file(current_clips[l_track_id].file_id).type
 			if l_type == File.VIDEO:
 				_set_video_clip_frame(l_track_id, a_frame_nr)
 				_set_audio_frame(l_track_id, a_frame_nr, l_new_clip, true)
@@ -157,17 +162,17 @@ func set_frame(a_frame_nr: int = get_current_frame_nr(), a_force: bool = false) 
 
 
 func _set_video_clip_frame(a_track_id: int, a_frame_nr: int) -> void:
-	if Project._file_data[current_clips[a_track_id].file_id][a_track_id].next_frame_available(
+	if Project.get_video_file_data(current_clips[a_track_id].file_id, a_track_id).next_frame_available(
 			a_frame_nr, current_clips[a_track_id]) or views[a_track_id].texture == null: 
-		views[a_track_id].texture = Project._file_data[current_clips[a_track_id].file_id][a_track_id].get_video_frame(is_playing)
+		views[a_track_id].texture = Project.get_video_file_data(current_clips[a_track_id].file_id, a_track_id).get_video_frame(is_playing)
 
 
 func _set_audio_frame(a_track_id: int, a_frame_nr: int, a_new: bool, a_video: bool) -> void:
 	if a_new or audio_players[a_track_id].stream == null:
 		if a_video:
-			audio_players[a_track_id].stream = Project._file_data[current_clips[a_track_id].file_id][0].get_audio()
+			audio_players[a_track_id].stream = Project.get_video_file_data(current_clips[a_track_id].file_id, 0).get_audio()
 		else:	
-			audio_players[a_track_id].stream = Project._file_data[current_clips[a_track_id].file_id]
+			audio_players[a_track_id].stream = Project.get_file_data(current_clips[a_track_id].file_id)
 	_seek_audio(a_track_id, a_frame_nr)
 
 
@@ -182,12 +187,12 @@ func _seek_audio(a_track_id: int, a_frame_nr: int) -> void:
 
 
 func _set_image_clip_frame(a_track_id: int) -> void:
-	views[a_track_id].texture = Project._file_data[current_clips[a_track_id].file_id]
+	views[a_track_id].texture = Project.get_file_data(current_clips[a_track_id].file_id)
 
 
 func _set_color_clip_frame(a_track_id: int) -> void:
 	# TODO: Use a gradient and just set both colors to the same?
-	views[a_track_id].texture = Project._file_data[current_clips[a_track_id].file_id]
+	views[a_track_id].texture = Project.get_file_data(current_clips[a_track_id].file_id)
 		
 
 func get_clip_from_raw(a_track_id: int, a_frame_nr: int) -> ClipData:

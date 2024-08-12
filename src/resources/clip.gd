@@ -29,14 +29,14 @@ func _process(_delta: float) -> void:
 
 func set_clip_properties(a_clip_id: int) -> void:
 	id = a_clip_id
-	set_label_text(Project.file_data[Project.clips[a_clip_id].file_id].nickname)
-	position.x = Project.clips[a_clip_id].pts
+	set_label_text(Project.get_file_from_clip(id).nickname)
+	position.x = Project.get_clip_data(a_clip_id).pts
 	size.x = Project.clips[a_clip_id].duration * Project.timeline_scale
 	size.y = size.y
 
 
 func set_label_text(a_text: String) -> void:
-	$MarginContainer/NameLabel.text = a_text
+	($MarginContainer/NameLabel as Label).text = a_text
 
 
 func get_track_id() -> int:
@@ -49,7 +49,7 @@ func _on_button_pressed() -> void:
 	selected_clips = [self]
 
 
-func _on_button_button_down():
+func _on_button_button_down() -> void:
 	if Input.is_key_pressed(KEY_SPACE):
 		return
 	if get_local_mouse_position() > size or get_local_mouse_position() < Vector2.ZERO:
@@ -63,7 +63,7 @@ func _on_button_button_down():
 	get_viewport().set_input_as_handled() # To disable playhead from moving
 
 
-func _on_button_button_up():
+func _on_button_button_up() -> void:
 	if is_resizing_right or is_resizing_left:
 		Project.resize_clip(id, is_resizing_left)
 		is_resizing_right = false
@@ -75,15 +75,15 @@ func _get_drag_data(_position: Vector2) -> Variant:
 		if is_resizing_left or is_resizing_right:
 			is_resizing_right = false
 			is_resizing_left = false
-			get_parent().reset_clip(id)
+			(get_parent() as TimelineBox).reset_clip(id)
 		Timeline.is_clip_being_moved = true
 		modulate = Color(1, 1, 1, 0.1)
 		return ["CLIP", id, self, get_local_mouse_position().x]
 	return null
 
 
-func _notification(notification_type):
-	match notification_type:
+func _notification(a_notification_type: int) -> void:
+	match a_notification_type:
 		NOTIFICATION_DRAG_END:
 			if is_dragging:
 				is_dragging = false
@@ -91,6 +91,6 @@ func _notification(notification_type):
 				modulate = Color(1, 1, 1, 1)
 
 
-func _on_resized():
-	$MarginContainer.visible = size.x > 10
+func _on_resized() -> void:
+	($MarginContainer as MarginContainer).visible = size.x > 10
 
