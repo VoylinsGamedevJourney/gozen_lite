@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://bcrotmrvepics"]
+[gd_scene load_steps=22 format=3 uid="uid://bcrotmrvepics"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_uwbs4"]
 [ext_resource type="Script" path="res://scripts/menu_bar.gd" id="2_8dkfa"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://dlacvk44n7sof" path="res://icons/play_arrow.png" id="7_3ufo4"]
 [ext_resource type="Texture2D" uid="uid://x1t6mpi0of53" path="res://icons/fast_forward.png" id="8_f25q7"]
 [ext_resource type="Texture2D" uid="uid://cbw4dhih25o8d" path="res://icons/effect.png" id="10_yomit"]
+[ext_resource type="Script" path="res://scripts/timeline_box.gd" id="12_n4u37"]
 [ext_resource type="Script" path="res://scripts/render_menu.gd" id="12_o2q71"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rbpew"]
@@ -23,7 +24,6 @@ bg_color = Color(0.109422, 0.109422, 0.109422, 1)
 corner_radius_top_left = 10
 corner_radius_bottom_left = 10
 expand_margin_left = 5.0
-expand_margin_top = 5.0
 expand_margin_bottom = 5.0
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4xjyq"]
@@ -275,48 +275,55 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("6_7w0ww")
 
-[node name="HBox" type="HBoxContainer" parent="VBoxContainer/MainVSplit/TimelinePanel"]
+[node name="VBox" type="VBoxContainer" parent="VBoxContainer/MainVSplit/TimelinePanel"]
 layout_mode = 2
+
+[node name="TopHBox" type="HBoxContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/VBox"]
+layout_mode = 2
+
+[node name="Left" type="Control" parent="VBoxContainer/MainVSplit/TimelinePanel/VBox/TopHBox"]
+layout_mode = 2
+
+[node name="TODOTimeline" type="ColorRect" parent="VBoxContainer/MainVSplit/TimelinePanel/VBox/TopHBox"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BottomHBox" type="HBoxContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = 0
 
-[node name="SidePanel" type="PanelContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox"]
+[node name="SidePanel" type="PanelContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/VBox/BottomHBox"]
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_lyqci")
 
-[node name="SideScrollContainer" type="ScrollContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox/SidePanel"]
+[node name="SideScrollContainer" type="ScrollContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/VBox/BottomHBox/SidePanel"]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_4xjyq")
 horizontal_scroll_mode = 0
 
-[node name="TimelineSideVBox" type="VBoxContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox/SidePanel/SideScrollContainer"]
+[node name="TimelineSideVBox" type="VBoxContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/VBox/BottomHBox/SidePanel/SideScrollContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 0
 
-[node name="MainTimelineScroll" type="ScrollContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox"]
+[node name="MainTimelineScroll" type="ScrollContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/VBox/BottomHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TimelineBox" type="Control" parent="VBoxContainer/MainVSplit/TimelinePanel/VBox/BottomHBox/MainTimelineScroll"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+script = ExtResource("12_n4u37")
 
-[node name="TimelineMain" type="Control" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="TimelineMainVBox" type="VBoxContainer" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll/TimelineMain"]
-unique_name_in_owner = true
-layout_mode = 2
-offset_bottom = 332.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 0
-
-[node name="Playhead" type="Panel" parent="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll/TimelineMain"]
+[node name="Playhead" type="Panel" parent="VBoxContainer/MainVSplit/TimelinePanel/VBox/BottomHBox/MainTimelineScroll/TimelineBox"]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0.501961)
 custom_minimum_size = Vector2(3, 2000)
@@ -454,6 +461,7 @@ text = "Render video"
 [connection signal="pressed" from="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox/RewindButton" to="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel" method="_on_rewind_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox/PlayPauseButton" to="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel" method="_on_play_pause_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel/VBox/HBox/PlaybackButtonsHBox/ForwardButton" to="VBoxContainer/MainVSplit/MainHSplit/SecondaryHSplit/ViewPanel" method="_on_forward_button_pressed"]
-[connection signal="gui_input" from="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll" to="VBoxContainer/MainVSplit/TimelinePanel" method="_on_main_timeline_scroll_gui_input"]
-[connection signal="gui_input" from="VBoxContainer/MainVSplit/TimelinePanel/HBox/MainTimelineScroll/TimelineMain/TimelineMainVBox" to="VBoxContainer/MainVSplit/TimelinePanel" method="_on_timeline_main_v_box_gui_input"]
+[connection signal="resized" from="VBoxContainer/MainVSplit/TimelinePanel/VBox/BottomHBox/SidePanel" to="VBoxContainer/MainVSplit/TimelinePanel" method="_on_side_panel_resized"]
+[connection signal="gui_input" from="VBoxContainer/MainVSplit/TimelinePanel/VBox/BottomHBox/MainTimelineScroll" to="VBoxContainer/MainVSplit/TimelinePanel" method="_on_main_timeline_scroll_gui_input"]
+[connection signal="gui_input" from="VBoxContainer/MainVSplit/TimelinePanel/VBox/BottomHBox/MainTimelineScroll/TimelineBox" to="VBoxContainer/MainVSplit/TimelinePanel" method="_on_timeline_box_gui_input"]
 [connection signal="pressed" from="RenderBackground/RenderMenu/VBox/RenderMenuTopBar/HBoxContainer/CloseButton" to="RenderBackground" method="_on_close_button_pressed"]

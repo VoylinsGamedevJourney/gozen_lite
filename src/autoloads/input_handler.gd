@@ -40,6 +40,7 @@ func _input(a_event: InputEvent) -> void:
 		for l_clip: PanelContainer in Clip.selected_clips:
 			Project.remove_clip(l_clip.id)
 			l_clip.queue_free()
+			await RenderingServer.frame_post_draw
 		
 
 func undo_action() -> void:

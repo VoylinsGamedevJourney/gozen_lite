@@ -2,17 +2,14 @@ class_name File extends Resource
 
 enum {
 	# Generated
-	COLOR = 1, 
-	TEXT = 4, 
-	GRADIENT = 8,
+	COLOR = 1, TEXT = 4, GRADIENT = 8,
 	# Files
-	VIDEO = 16,
-	IMAGE = 32,
-	AUDIO = 64,
+	VIDEO = 16,	IMAGE = 32,	AUDIO = 64,
 }
 
 
-const VIDEO_EXT: PackedStringArray = ["mp4","mov","avi","mkv","webm","flv","mpeg","mpg","wmv","asf","vob","ts","m2ts","mts","3gp","3g2"]
+const VIDEO_EXT: PackedStringArray = ["mp4","mov","avi","mkv","webm","flv","mpeg",
+									  "mpg","wmv","asf","vob","ts","m2ts","mts","3gp","3g2"]
 const AUDIO_EXT: PackedStringArray = ["ogg","wav","mp3"]
 const IMAGE_EXT: PackedStringArray = ["png","jpg","svg","webp","bmp","tga","dds","hdr","exr"]
 
@@ -54,11 +51,11 @@ static func create_file(a_file_path: String) -> bool:
 			return false
 
 	if l_extension in VIDEO_EXT:
+		# TODO: Change this when frame rate gets changed
 		l_file.type = VIDEO
-		Project._on_timeline_scale_changed.emit(_set_duration_video)
 	elif l_extension in AUDIO_EXT:
+		# TODO: Change this when frame rate gets changed
 		l_file.type = AUDIO
-		Project._on_timeline_scale_changed.emit(_set_duration_audio)
 	elif l_extension in IMAGE_EXT:
 		l_file.type = IMAGE
 		l_file.duration = Settings.default_duration_image
@@ -69,7 +66,7 @@ static func create_file(a_file_path: String) -> bool:
 	return true
 
 
-static func create_color_file(a_color: Color) -> File:
+static func create_color_file(a_color: Color) -> void:
 	var l_file: File = File.new()
 	l_file.type = COLOR
 	l_file.color = a_color
@@ -77,10 +74,9 @@ static func create_color_file(a_color: Color) -> File:
 	l_file.size = Project.resolution
 
 	_init_file(l_file)
-	return l_file
 
 
-static func create_text_file(a_text: String) -> File:
+static func create_text_file(a_text: String) -> void:
 	var l_file: File = File.new()
 	l_file.type = TEXT
 	l_file.text = a_text
@@ -89,10 +85,9 @@ static func create_text_file(a_text: String) -> File:
 	l_file.size = Project.resolution
 
 	_init_file(l_file)
-	return l_file
 
 
-static func create_gradient_file(a_gradient: GradientTexture2D) -> File:
+static func create_gradient_file(a_gradient: GradientTexture2D) -> void:
 	var l_file: File = File.new()
 	l_file.type = GRADIENT
 	l_file.gradient = a_gradient
@@ -100,7 +95,6 @@ static func create_gradient_file(a_gradient: GradientTexture2D) -> File:
 	l_file.size = Project.resolution
 
 	_init_file(l_file)
-	return l_file
 
 
 static func check_duplicate(a_file_1: File, a_file_2: File) -> bool:
@@ -113,14 +107,21 @@ static func _init_file(a_file: File) -> void:
 	Project.counter_file_id += 1
 	a_file.id = Project.counter_file_id
 	a_file.add_file_data()
+
+	if a_file.type == VIDEO:
+		a_file._set_duration_video()
+	elif a_file.type == AUDIO:
+		a_file._set_duration_audio()
+
 	Project.file_data[a_file.id] = a_file
+	Project._on_file_added.emit(a_file.id)
 
 
 #------------------------------------------------ OTHER FUNCTIONS
 func _set_duration_video() -> void:
 	duration = roundi(Project._file_data[id][0].get_total_frame_nr() /
 					  Project._file_data[id][0].get_framerate() *
-					  Project.frame_to_pos(Project.frame_rate))
+					  Project.frame_to_pos(roundi(Project.frame_rate)))
 
 
 func _set_duration_audio() -> void:
