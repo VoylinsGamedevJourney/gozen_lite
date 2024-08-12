@@ -1,5 +1,6 @@
 class_name VideoData extends Node
 
+
 var video_data: Video
 
 var current_frame: int = -1 # Current frame from timeline
@@ -29,7 +30,7 @@ func get_video_frame(a_is_playing: bool) -> ImageTexture:
 func next_frame_available(a_frame_nr: int, a_clip: ClipData) -> bool: # Only for video
 	# Convert frame number to what frame number would be for the video file
 	a_frame_nr = int(a_frame_nr / Project.frame_rate * video_data.get_framerate())
-	current_frame = round(a_frame_nr - a_clip.timeline_start - a_clip.start_frame / Project.frame_rate * video_data.get_framerate())
+	current_frame = round(a_frame_nr - a_clip.pts - a_clip.frame_start / Project.frame_rate * video_data.get_framerate())
 	if current_frame != video_frame_nr:
 		frame_skip = -1 if current_frame < video_frame_nr else current_frame - video_frame_nr
 		return true

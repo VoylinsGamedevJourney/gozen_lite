@@ -48,7 +48,8 @@ func _on_menu_project_id_pressed(a_id: int) -> void:
 		0: # New project
 			Project.reset()
 		1: # Open project
-			Project.open_project()
+			print("Not implemented yet!") # TODO: WWe need the popup handler for this to work
+			#Project.open_project()
 		2: # Open recent project
 			print("Not implemented yet!")
 			pass # TODO: Make a submenu popup show with the 10 most recent projects

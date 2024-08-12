@@ -1,18 +1,20 @@
-class_name EffectsPanel extends PanelContainer
+extends PanelContainer
 
-
-# We want file effects and clip effects, so we will need to change the content
-# of this panel depending on what has been selected
-
-static var instance: EffectsPanel
 
 
 func _ready() -> void:
-	instance = self
+	# TODO: Connect signals from Project to the correct functions
+	pass
 
 
-static func show_file_effects(_file_id: int) -> void:
+func show_file_effects(_file_id: int) -> void:
 	# TODO: Make this work
 	# Already connected to file buttons!
-	pass #print(a_file_id)
+	print("Showing file effects!")
+
+
+func show_clip_effects(_clip_id: int) -> void:
+	# TODO: Make this work
+	# Already connected to file buttons!
+	print("Showing glip effects!")
 

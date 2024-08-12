@@ -1,4 +1,4 @@
-class_name Draggable extends Node
+extends Node
 # Will only be used for dragging files onto the timeline
 # TODO: Check for when multiple files were selected to drag into the timeline
 

@@ -1,35 +1,43 @@
 class_name ViewPanel extends PanelContainer
 
 
-var end_timepoint: int = 0
+var current_frame: int = -1
+var end_frame_pts: int = 0
+
 var is_playing: bool = false
 var was_playing: bool = false
+var is_dragging: bool = false
 
 var time_elapsed: float = 0.0
-var is_dragging: bool = false
 var previous_drag_time: int = 0
 
 var views: Array[TextureRect] = []
 var audio_players: Array[AudioStreamPlayer] = []
 var current_clips: Array[ClipData] = []
 
-var current_frame: int = -1
-
 
 
 func _ready() -> void:
-	Project._on_project_loaded.connect(func() -> void:
-			views = []
-			audio_players = []
-			current_clips = []
-			set_frame_forced()
-			%ViewSubViewport.size = Project.resolution)
-	Project._set_frame.connect(set_frame)
+	Project._on_project_loaded.connect(_setup)
 	Project._set_frame_forced.connect(set_frame_forced)
 	Project._playhead_moved.connect(playhead_moved)
+	Project._set_frame.connect(set_frame)
+	Project._on_end_frame_pts_changed.connect(func(a_value): end_frame_pts = a_value)
+
+	_setup()
+
+
+func _setup() -> void:
+	views = []
+	audio_players = []
+	current_clips = []
+
 	for l_id: int in Project.tracks.size():
 		add_view()
+
+	set_frame_forced()
 	%ViewSubViewport.size = Project.resolution
+
 	
 		
 func _input(a_event: InputEvent) -> void:
@@ -40,14 +48,14 @@ func _input(a_event: InputEvent) -> void:
 func _process(a_delta: float) -> void:
 	if is_playing:
 		time_elapsed += a_delta
-		if time_elapsed < 1./Project.frame_rate:
+		if time_elapsed < 1. / Project.frame_rate:
 			return
 		
-		while time_elapsed >= 1./Project.frame_rate:
-			time_elapsed -= 1./Project.frame_rate
+		while time_elapsed >= 1. / Project.frame_rate:
+			time_elapsed -= 1. / Project.frame_rate
 			%Playhead.position.x += Project.timeline_scale
 		
-		if get_current_frame_nr() >= Project.get_end_frame_pts():
+		if get_current_frame_nr() >= end_frame_pts:
 			if is_dragging:
 				return
 			_on_play_pause_button_pressed()
@@ -60,12 +68,16 @@ func get_current_frame_nr() -> int:
 
 
 func _on_play_pause_button_pressed():
+	if current_frame >= end_frame_pts:
+		return
+
 	# Checking if enough views are present
 	while(views.size() != Project.tracks.size()):
 		if views.size() > Project.tracks.size():
 			remove_view()
 		else: 
 			add_view()
+
 	is_playing = !is_playing
 	for l_player: AudioStreamPlayer in audio_players:
 		if !is_playing:
@@ -160,13 +172,13 @@ func _set_audio_frame(a_track_id: int, a_frame_nr: int, a_new: bool, a_video: bo
 
 
 func _seek_audio(a_track_id: int, a_frame_nr: int) -> void:
+	a_frame_nr -= current_clips[a_track_id].pts - current_clips[a_track_id].frame_start
 	if is_playing and !audio_players[a_track_id].playing:
-		audio_players[a_track_id].play()
-	if !is_playing:
-		a_frame_nr -= current_clips[a_track_id].timeline_start + current_clips[a_track_id].start_frame
+		audio_players[a_track_id].play((a_frame_nr / Project.frame_rate) - (1 / Project.frame_rate))
+	elif !is_playing:
 		audio_players[a_track_id].set_stream_paused(false) # Seeking does not work when paused
 		audio_players[a_track_id].seek((a_frame_nr / Project.frame_rate) - (1 / Project.frame_rate))
-		audio_players[a_track_id].set_stream_paused(!is_playing)
+	audio_players[a_track_id].set_stream_paused(!is_playing)
 
 
 func _set_image_clip_frame(a_track_id: int) -> void:
