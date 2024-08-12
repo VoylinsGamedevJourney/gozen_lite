@@ -46,8 +46,8 @@ static func create_file(a_file_path: String) -> bool:
 	l_file.sha256 = FileAccess.get_sha256(a_file_path)
 
 	# Checking for duplicate files
-	for l_file_id: int in Project.file_data:
-		if check_duplicate(Project.file_data[l_file_id], l_file):
+	for l_file_id: int in Project.files:
+		if check_duplicate(Project.get_file(l_file_id), l_file):
 			return false
 
 	if l_extension in VIDEO_EXT:
@@ -113,43 +113,50 @@ static func _init_file(a_file: File) -> void:
 	elif a_file.type == AUDIO:
 		a_file._set_duration_audio()
 
-	Project.file_data[a_file.id] = a_file
+	Project.files[a_file.id] = a_file
 	Project._on_file_added.emit(a_file.id)
 
 
 #------------------------------------------------ OTHER FUNCTIONS
 func _set_duration_video() -> void:
-	duration = roundi(Project._file_data[id][0].get_total_frame_nr() /
-					  Project._file_data[id][0].get_framerate() *
-					  Project.frame_to_pos(roundi(Project.frame_rate)))
+	duration = round(Project.get_video_file_data(id, 0).get_total_frame_nr() /
+					 Project.get_video_file_data(id, 0).get_framerate() *
+					 Project.frame_to_pos(roundi(Project.frame_rate)))
 
 
 func _set_duration_audio() -> void:
-	duration = roundi(Project._file_data[id].get_length() * Project.frame_rate)
+	var l_audio_stream: AudioStream = Project._file_data[id]
+	duration = round(l_audio_stream.get_length() * Project.frame_rate)
 
 
 func add_file_data() -> void:
 	match type:
 		VIDEO:
-			Project._file_data[id] = []
-			Project._file_data[id].resize(Project.tracks.size())
+			var l_array: Array[VideoData] = []
+			if l_array.resize(Project.tracks.size()):
+				printerr("Couldn't resize array successfully for VideoData!")
+			Project.set_file_data(id, l_array)
 			
 			for _i: int in Project.tracks.size():
-				Project._file_data[id][_i] = VideoData.new()
-				Project._file_data[id][_i].open_video(path, _i == 0)
+				var l_video_data: VideoData = VideoData.new()
+				l_video_data.open_video(path, _i == 0)
+				Project.set_video_file_data(id, _i, l_video_data)
 		IMAGE:
-			Project._file_data[id] = ImageTexture.create_from_image(Image.load_from_file(path))
+			Project.set_file_data(id, ImageTexture.create_from_image(Image.load_from_file(path)))
 		AUDIO:
-			Project._file_data[id] = AudioImporter.load(path)
+			Project.set_file_data(id, AudioImporter.load(path))
 		COLOR:
-			Project._file_data[id] = ColorRect.new()
-			Project._file_data[id].color = color
-			Project._file_data[id].size = Project.resolution
+			var l_color_rect: ColorRect = ColorRect.new()
+			l_color_rect.color = color
+			l_color_rect.size = Project.resolution
+			Project.set_file_data(id, l_color_rect)
 		GRADIENT:
-			Project._file_data[id] = TextureRect.new()
-			Project._file_data[id].gradient = gradient
+			var l_texture_rect: TextureRect = TextureRect.new()
+			l_texture_rect.texture = gradient
+			Project.set_file_data(id, l_texture_rect)
 		TEXT:
-			Project._file_data[id] = Label.new()
-			Project._file_data[id].text = text
-			Project._file_data[id].label_settings = text_settings
+			var l_label: Label = Label.new()
+			l_label.text = text
+			l_label.label_settings = text_settings
+			Project.set_file_data(id, l_label)
 

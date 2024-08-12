@@ -20,14 +20,19 @@ var timeline_scale_max: float = 5.6
 var timeline_scale_min: float = 0.1
 
 var action_size: int = 100 # Redo and undo limit
+var err: int = 0
 
 
 
-func _ready():
+func _ready() -> void:
 	if FileAccess.file_exists(PATH):
-		load_data(PATH)
+		err = load_data(PATH)
+		if err:
+			printerr("Something went wrong loading settings! ", err)
 	else:
-		save_data(PATH)
+		err = save_data(PATH)
+		if err:
+			printerr("Something went wrong saving settings! ", err)
 
 
 func set_duration_image(a_value: int) -> void:

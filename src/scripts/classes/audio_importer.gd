@@ -45,9 +45,9 @@ static func load_mp3(a_path: String) -> AudioStreamMP3:
 
 static func load_wav(a_path: String) -> AudioStream:
 	last_error = ERROR.OK
-	var l_bytes = FileAccess.get_file_as_bytes(a_path)
-	var l_stream = AudioStreamWAV.new()
-	var l_samples = 0
+	var l_bytes: PackedByteArray = FileAccess.get_file_as_bytes(a_path)
+	var l_stream: AudioStreamWAV = AudioStreamWAV.new()
+	var l_samples: int = 0
 
 	# Checking RIFF chunk
 	if l_bytes.slice(0, 4).get_string_from_utf8() != "RIFF":
@@ -62,9 +62,9 @@ static func load_wav(a_path: String) -> AudioStream:
 		last_error = ERROR.NO_FMT
 		return null
 	
-	l_stream.format = l_bytes.decode_s16(20)
+	l_stream.format = l_bytes.decode_s16(20) as AudioStreamWAV.Format
 	if not l_stream.format in [0,1,2]:
-		l_stream.format = 1
+		l_stream.format = 1  as AudioStreamWAV.Format
 	elif l_stream.format == 2:
 		last_error = ERROR.NO_FORMAT_SUPPORT
 		return null
