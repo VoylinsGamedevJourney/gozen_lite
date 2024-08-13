@@ -98,7 +98,6 @@ func send_frame(a_frame: Image) -> void:
 	if !is_rendering:
 		print("Not rendering atm")
 		return
-	render_array.append(a_frame)
 	err = renderer.send_frame(a_frame)
 	if err:
 		printerr("Something went wrong sending frame to renderer! ", err)
