@@ -334,7 +334,6 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_41ac2")
 
 [node name="RenderBackground" type="PanelContainer" parent="."]
-visible = false
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_lh8hy")
 script = ExtResource("12_o2q71")
@@ -382,11 +381,14 @@ unique_name_in_owner = true
 layout_mode = 2
 
 [node name="AudioCodecLabel" type="Label" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+visible = false
 layout_mode = 2
 text = "Audio Codec"
 horizontal_alignment = 2
 
 [node name="AudioCodecOptionButton" type="OptionButton" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
 
 [node name="Spacer" type="Control" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
@@ -399,25 +401,30 @@ text = "* = Hardware acceleration possible"
 horizontal_alignment = 2
 
 [node name="RenderAudioLabel" type="Label" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+visible = false
 layout_mode = 2
 text = "Enable audio"
 horizontal_alignment = 2
 
 [node name="CheckBox" type="CheckBox" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+visible = false
 layout_mode = 2
 
 [node name="OutputFileLabel" type="Label" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
 layout_mode = 2
+text = "Path"
 horizontal_alignment = 2
 
 [node name="OutputFileHBox" type="HBoxContainer" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
 layout_mode = 2
 
 [node name="OutputFileLineEdit" type="LineEdit" parent="RenderBackground/RenderMenu/VBox/GridContainer/OutputFileHBox"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="Button" type="Button" parent="RenderBackground/RenderMenu/VBox/GridContainer/OutputFileHBox"]
+visible = false
 layout_mode = 2
 text = "Select path"
 
@@ -427,6 +434,7 @@ text = "Bit rate"
 horizontal_alignment = 2
 
 [node name="BitRateSpinBox" type="SpinBox" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -443,6 +451,7 @@ text = "GOP size"
 horizontal_alignment = 2
 
 [node name="GopSizeSpinBox" type="SpinBox" parent="RenderBackground/RenderMenu/VBox/GridContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -465,3 +474,4 @@ text = "Render video"
 [connection signal="gui_input" from="VBoxContainer/MainVSplit/TimelinePanel/VBox/BottomHBox/MainTimelineScroll" to="VBoxContainer/MainVSplit/TimelinePanel" method="_on_main_timeline_scroll_gui_input"]
 [connection signal="gui_input" from="VBoxContainer/MainVSplit/TimelinePanel/VBox/BottomHBox/MainTimelineScroll/TimelineBox" to="VBoxContainer/MainVSplit/TimelinePanel" method="_on_timeline_box_gui_input"]
 [connection signal="pressed" from="RenderBackground/RenderMenu/VBox/RenderMenuTopBar/HBoxContainer/CloseButton" to="RenderBackground" method="_on_close_button_pressed"]
+[connection signal="pressed" from="RenderBackground/RenderMenu/VBox/HBoxContainer/RenderButton" to="RenderBackground" method="start_rendering"]
