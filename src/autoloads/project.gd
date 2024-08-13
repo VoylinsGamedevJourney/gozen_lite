@@ -21,6 +21,11 @@ signal _is_resizing_clip(clip_id: int, direction_left: bool) # direction: true =
 signal _show_file_effects(file_id: int)
 signal _show_clip_effects(clip_id: int)
 
+signal _open_render_menu
+signal _is_rendering(value: bool)
+signal _send_frame(frame: Image)
+signal _sending_frames_finished
+
 
 #------------------------------------------------ TEMPORARY VARIABLES
 var _path: String = ""

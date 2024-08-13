@@ -25,15 +25,18 @@ func _input(a_event: InputEvent) -> void:
 		# TODO: show popup message to agree and possibly save unsaved changes
 		Project.reset_project()
 	if a_event.is_action_pressed("open_render_menu"):
-		print("Not implemented yet!")
+		Project._open_render_menu.emit()
+
 
 	# Help stuff
 	if a_event.is_action_pressed("close_editor"):
 		print("Not implemented yet!")
+		
 
 	# Editor stuff
 	if a_event.is_action_pressed("open_help"):
 		print("Not implemented yet!")
+
 
 	# Timeline stuff
 	if a_event.is_action_pressed("delete") and Clip.selected_clips.size() != 0:

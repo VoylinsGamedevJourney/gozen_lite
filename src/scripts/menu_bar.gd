@@ -63,8 +63,7 @@ func _on_menu_project_id_pressed(a_id: int) -> void:
 		5: # Save project as ...
 			Project.save_project()
 		7: # Render project
-			print("Not implemented yet!")
-			pass # TODO: Show render menu	
+			Project._open_render_menu.emit()
 		9: # Quit editor
 			# TODO: Check for changes and save them if needed
 			get_tree().quit()

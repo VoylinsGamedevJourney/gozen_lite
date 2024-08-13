@@ -7,6 +7,7 @@ var end_frame_pts: int = 0
 var is_playing: bool = false
 var was_playing: bool = false
 var is_dragging: bool = false
+var is_rendering: bool = false
 
 var time_elapsed: float = 0.0
 var previous_drag_time: int = 0
@@ -24,6 +25,7 @@ func _ready() -> void:
 	err += Project._set_frame_forced.connect(set_frame_forced)
 	err += Project._playhead_moved.connect(playhead_moved)
 	err += Project._set_frame.connect(set_frame)
+	err += Project._is_rendering.connect(render_frames)
 	err += Project._on_end_frame_pts_changed.connect(
 			func(a_value: int) -> void: end_frame_pts = a_value)
 	if err:
@@ -66,6 +68,16 @@ func _process(a_delta: float) -> void:
 			_on_play_pause_button_pressed()
 		else:
 			set_frame()
+	
+
+func render_frames(a_value: bool) -> void:
+	if !a_value:
+		return
+	for l_frame_nr: int in Project.get_end_frame_pts():
+		set_frame(l_frame_nr)
+		await RenderingServer.frame_post_draw
+		Project._send_frame.emit((%ViewSubViewport as SubViewport).get_texture().get_image()) #.duplicate()
+	Project._sending_frames_finished.emit()
 
 
 func get_current_frame_nr() -> int:
