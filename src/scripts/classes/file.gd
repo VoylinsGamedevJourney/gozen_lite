@@ -36,6 +36,7 @@ var position: Vector2 = Vector2.ZERO
 var size: Vector2i
 
 
+
 #------------------------------------------------ FILE CREATE STATIC FUNCTIONS
 static func create_file(a_file_path: String) -> bool:
 	var l_file: File = File.new()
@@ -106,7 +107,10 @@ static func check_duplicate(a_file_1: File, a_file_2: File) -> bool:
 static func _init_file(a_file: File) -> void:
 	Project.counter_file_id += 1
 	a_file.id = Project.counter_file_id
-	a_file.add_file_data()
+	if !a_file.add_file_data():
+		printerr("Something went wrong adding file data, removing file entry!")
+		Project.counter_file_id -= 1
+		return
 
 	if a_file.type == VIDEO:
 		a_file._set_duration_video()
@@ -129,18 +133,20 @@ func _set_duration_audio() -> void:
 	duration = round(l_audio_stream.get_length() * Project.frame_rate)
 
 
-func add_file_data() -> void:
+func add_file_data() -> bool:
 	match type:
 		VIDEO:
 			var l_array: Array[VideoData] = []
 			if l_array.resize(Project.tracks.size()):
 				printerr("Couldn't resize array successfully for VideoData!")
-			Project.set_file_data(id, l_array)
+			Video.get_video_file_meta(path)
 			
 			for _i: int in Project.tracks.size():
 				var l_video_data: VideoData = VideoData.new()
-				l_video_data.open_video(path, _i == 0)
+				if !l_video_data.open_video(path, _i == 0):
+					return false
 				Project.set_video_file_data(id, _i, l_video_data)
+			Project.set_file_data(id, l_array)
 		IMAGE:
 			Project.set_file_data(id, ImageTexture.create_from_image(Image.load_from_file(path)))
 		AUDIO:
@@ -159,4 +165,5 @@ func add_file_data() -> void:
 			l_label.text = text
 			l_label.label_settings = text_settings
 			Project.set_file_data(id, l_label)
+	return true
 
