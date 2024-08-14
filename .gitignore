@@ -4,5 +4,9 @@
 *.translation
 
 # Exports
-bin/
 src/test.gozen
+*.exe
+*.sh
+*.so
+*.pck
+*.x86_*
