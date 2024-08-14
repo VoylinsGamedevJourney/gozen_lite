@@ -8,5 +8,6 @@ src/test.gozen
 *.exe
 *.sh
 *.so
+*.so.*
 *.pck
 *.x86_*
