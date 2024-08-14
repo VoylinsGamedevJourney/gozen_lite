@@ -7,3 +7,5 @@ func _ready() -> void:
 		if l_arg.get_extension() == "gozen":
 			Project.load_project(l_arg)
 			break
+
+	(get_node("RenderBackground") as Control).visible = false
