@@ -9,11 +9,13 @@ var frame_skip: int = 0 # Amount of frame number difference
 var err: int = 0
 
 
-func open_video(a_path: String, load_audio: bool) -> void:
+func open_video(a_path: String, a_load_audio: bool) -> bool:
 	video_data = Video.new()
-	err = video_data.open_video(a_path, load_audio)
+	err = video_data.open_video(a_path, a_load_audio)
 	if err:
 		printerr("Something went wrong opening video file!", err)
+		return false
+	return true
 
 
 func get_video_frame(a_is_playing: bool) -> ImageTexture:
