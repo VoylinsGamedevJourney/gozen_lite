@@ -52,12 +52,51 @@ var resolution: Vector2i = Vector2i(1920, 1080)
 
 #------------------------------------------------ GODOT FUNCTIONS
 func _ready() -> void:
+	print_debug_info()
+
 	for _i: int in Settings.default_tracks:
 		tracks.append({})
 		_track_data.append(PackedInt64Array())
 	_err = get_window().files_dropped.connect(Project._on_files_dropped)
 	if _err:
 		printerr("Connect function failed! ", _err)
+
+
+#------------------------------------------------ DEBUG FUNCTIONS
+func print_debug_info() -> void:
+	print_rich("[color=purple][b]--==  GoZen - Video Editor  ==--")
+	for l_info: Array in [
+			["GoZen Version", ProjectSettings.get_setting("application/config/version")],
+			["Distribution", OS.get_distribution_name()],
+			["OS Version", OS.get_version()],
+			["Processor", OS.get_processor_name()],
+			["Threads", OS.get_processor_count()],
+			["Ram", "\n\tTotal: %s GB\n\tAvailable: %s GB" % [
+				str("%0.2f" % (OS.get_memory_info().physical/1_073_741_824)), 
+				str("%0.2f" % (OS.get_memory_info().available/1_073_741_824))]],
+			["Video adapter", "\n\tName: %s\n\tVersion: %s\n\tType: %s" % [
+				RenderingServer.get_video_adapter_name(),
+				RenderingServer.get_video_adapter_api_version(),
+				RenderingServer.get_video_adapter_type()]],
+			["Debug build", OS.is_debug_build()]]:
+		print_rich("[color=purple][b]%s[/b] %s[/color]" % l_info)
+
+	var l_encoders: Dictionary = Renderer.get_supported_codecs()
+	print_rich("[color=purple][b]Supported video encoders[/b][/color]")
+	for l_video_codec: String in l_encoders.video:
+		print_rich("\t[color=purple][b]%s:[/b] Supported: %s, Hardware encoding: %s[/color]" % [
+			l_video_codec,	
+			l_encoders.video[l_video_codec].supported,
+			l_encoders.video[l_video_codec].hardware_accel])
+
+	print_rich("[color=purple][b]Supported audio encoders[/b][/color]")
+	for l_audio_codec: String in l_encoders.audio:
+		print_rich("\t[color=purple][b]%s:[/b] Supported: %s, Hardware encoding: %s[/color]" % [
+			l_audio_codec,	
+			l_encoders.audio[l_audio_codec].supported,
+			l_encoders.audio[l_audio_codec].hardware_accel])
+
+	print_rich("[color=purple][b]--==--================--==--")
 
 
 #------------------------------------------------ PROJECT DATA FUNCTIONS
