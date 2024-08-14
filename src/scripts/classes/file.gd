@@ -109,6 +109,7 @@ static func _init_file(a_file: File) -> void:
 	a_file.id = Project.counter_file_id
 	if !a_file.add_file_data():
 		printerr("Something went wrong adding file data, removing file entry!")
+		Project._file_data.erase[a_file.id]
 		Project.counter_file_id -= 1
 		return
 
@@ -140,13 +141,13 @@ func add_file_data() -> bool:
 			if l_array.resize(Project.tracks.size()):
 				printerr("Couldn't resize array successfully for VideoData!")
 			Video.get_video_file_meta(path)
+			Project.set_file_data(id, l_array)
 			
 			for _i: int in Project.tracks.size():
 				var l_video_data: VideoData = VideoData.new()
 				if !l_video_data.open_video(path, _i == 0):
 					return false
 				Project.set_video_file_data(id, _i, l_video_data)
-			Project.set_file_data(id, l_array)
 		IMAGE:
 			Project.set_file_data(id, ImageTexture.create_from_image(Image.load_from_file(path)))
 		AUDIO:
