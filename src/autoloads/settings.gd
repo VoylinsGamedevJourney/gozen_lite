@@ -7,14 +7,13 @@ const PATH: String = "user://settings"
 var default_tracks: int = 6
 
 var default_duration_image: int = 150:
-
-	set(a_value): set_duration_image(a_value)
+	set = set_duration_image
 var default_duration_text: int = 150:
-	set(a_value): set_duration_text(a_value)
+	set = set_duration_text
 var default_duration_color: int = 150:
-	set(a_value): set_duration_color(a_value)
+	set = set_duration_color
 var default_duration_gradient: int = 150:
-	set(a_value): set_duration_gradient(a_value)
+	set = set_duration_gradient
 
 var timeline_scale_max: float = 5.6
 var timeline_scale_min: float = 0.1
