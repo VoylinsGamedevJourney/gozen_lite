@@ -11,3 +11,5 @@ src/test.gozen
 *.so.*
 *.pck
 *.x86_*
+*.dll
+*.zip
