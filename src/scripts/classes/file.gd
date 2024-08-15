@@ -109,7 +109,7 @@ static func _init_file(a_file: File) -> void:
 	a_file.id = Project.counter_file_id
 	if !a_file.add_file_data():
 		printerr("Something went wrong adding file data, removing file entry!")
-		Project._file_data.erase[a_file.id]
+		Project._file_data.erase(a_file.id)
 		Project.counter_file_id -= 1
 		return
 
