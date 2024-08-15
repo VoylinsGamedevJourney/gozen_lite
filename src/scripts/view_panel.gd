@@ -10,7 +10,6 @@ var is_dragging: bool = false
 var is_rendering: bool = false
 
 var time_elapsed: float = 0.0
-var previous_drag_time: int = 0
 
 var views: Array[TextureRect] = []
 var audio_players: Array[AudioStreamPlayer] = []
@@ -223,9 +222,7 @@ func playhead_moved(a_dragging: bool) -> void:
 		is_playing = false
 		for l_player: AudioStreamPlayer in audio_players:
 			l_player.set_stream_paused(true)
-	if abs(abs(get_current_frame_nr())-abs(current_frame)) < 20 or previous_drag_time + 300 <= Time.get_ticks_msec():
-		previous_drag_time = Time.get_ticks_msec()
-		set_frame_forced()
+	set_frame_forced()
 	if !a_dragging:
 		is_dragging = false
 		is_playing = was_playing
