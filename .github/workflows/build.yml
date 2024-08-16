@@ -35,9 +35,8 @@ jobs:
         id: get-date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-
       - name: Installing dependencies
-        run: pacman -Syu --noconfirm ffmpeg git bash yasm python python-pip scons gcc diffutils make
+        run: pacman -Syu --noconfirm ffmpeg git bash yasm python python-pip scons gcc diffutils make wget unzip tar
       - name: Checkout submodules
         uses: actions/checkout@v4
         with:
@@ -45,11 +44,12 @@ jobs:
 
       - name: Prepare Godot
         run: |
-          wget -O godot_linux.zip https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          wget -q -O godot_linux.zip https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
           unzip godot_linux.zip
-          wget -O godot_export_templates.tpz https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          wget -q -O godot_export_templates.tpz https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
           mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
-          tar -xf godot_export_templates.tpz -C ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          unzip godot_export_templates.tpz -d ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          mv ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
           sed -i "s/config\/version=\"[0-9-]\+-alpha\"/config\/version=\"${{ env.date }}-alpha\"/" src/project.godot
 
       # DEBUG BUILDS
@@ -58,7 +58,7 @@ jobs:
         run: |
           scons -C gde_gozen -j4 target=template_debug platform=linux arch=x86_64 use_system=yes dev_build=yes
           cp gde_gozen/bin/linux_template_debug/* bin/Linux
-          godot --import src_project --quiet --headless --export-debug Linux ../bin/Linux/GoZen_Lite.x86_64
+          ./Godot_v${GODOT_VERSION}-stable_linux.x86_64 --import src/project.godot --quiet --headless --export-debug Linux ../bin/Linux/GoZen_Lite.x86_64
       - name: Uploading GDExtension artifact debug
         if: ${{ github.event.inputs.build_target == 'debug' }}
         uses: actions/upload-artifact@v4
@@ -71,7 +71,7 @@ jobs:
         run: |
           scons -C gde_gozen -j4 target=template_debug platform=linux arch=x86_64 use_system=no dev_build=yes
           cp gde_gozen/bin/linux_full_template_debug/* bin/Linux_full
-          godot --import src_project --quiet --headless --export-debug Linux_full ../bin/Linux_full/GoZen_Lite.x86_64
+          ./Godot_v${GODOT_VERSION}-stable_linux.x86_64 --import src/project.godot --quiet --headless --export-debug Linux_full ../bin/Linux_full/GoZen_Lite.x86_64
       - name: Uploading GDExtension artifact full debug
         if: ${{ github.event.inputs.build_target == 'debug' }}
         uses: actions/upload-artifact@v4
@@ -85,7 +85,7 @@ jobs:
         run: |
           scons -C gde_gozen -j4 target=template_release platform=linux arch=x86_64 use_system=yes
           cp gde_gozen/bin/linux_template_release/* bin/Linux
-          godot --import src_project --quiet --headless --export-debug Linux ../bin/Linux/GoZen_Lite.x86_64
+          ./Godot_v${GODOT_VERSION}-stable_linux.x86_64 --import src/project.godot --quiet --headless --export-debug Linux ../bin/Linux/GoZen_Lite.x86_64
       - name: Uploading GDExtension artifact release
         if: ${{ github.event.inputs.build_target == 'release' }}
         uses: actions/upload-artifact@v4
@@ -98,7 +98,7 @@ jobs:
         run: |
           scons -C gde_gozen -j4 target=template_release platform=linux arch=x86_64 use_system=no enable_small=yes
           cp gde_gozen/bin/linux_full_template_release/* bin/Linux
-          godot --import src_project --quiet --headless --export-debug Linux_full ../bin/Linux_full/GoZen_Lite.x86_64
+          ./Godot_v${GODOT_VERSION}-stable_linux.x86_64 --import src/project.godot --quiet --headless --export-debug Linux_full ../bin/Linux_full/GoZen_Lite.x86_64
       - name: Uploading GDExtension artifact full release
         if: ${{ github.event.inputs.build_target == 'release' }}
         uses: actions/upload-artifact@v4
@@ -116,21 +116,22 @@ jobs:
         id: get-date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-      - name: Prepare Godot
-        run: |
-          wget -O godot_linux.zip https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-          unzip godot_linux.zip
-          wget -O godot_export_templates.tpz https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
-          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
-          tar -xf godot_export_templates.tpz -C ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
-          sed -i "s/config\/version=\"[0-9-]\+-alpha\"/config\/version=\"${{ env.date }}-alpha\"/" src/project.godot
-
       - name: Installing dependencies
-        run: pacman -Syu --noconfirm ffmpeg git bash yasm python python-pip scons gcc diffutils make mingw-w64 godot
+        run: pacman -Syu --noconfirm ffmpeg git bash yasm python python-pip scons gcc diffutils make mingw-w64 godot wget unzip tar
       - name: Checkout submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Prepare Godot
+        run: |
+          wget -q -O godot_linux.zip https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip godot_linux.zip
+          wget -q -O godot_export_templates.tpz https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          unzip godot_export_templates.tpz -d ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          mv ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          sed -i "s/config\/version=\"[0-9-]\+-alpha\"/config\/version=\"${{ env.date }}-alpha\"/" src/project.godot
 
         # DEBUG BUILD
       - name: Building debug Windows
@@ -138,7 +139,7 @@ jobs:
         run: |
           scons -C gde_gozen -j4 target=template_debug platform=windows arch=x86_64 use_system=no dev_build=yes
           cp gde_gozen/bin/windows_template_debug/* bin/Windows
-          godot --import src_project --quiet --headless --export-debug Windows ../bin/Windows/GoZen_Lite.x86_64
+          ./Godot_v${GODOT_VERSION}-stable_linux.x86_64 --import src/project.godot --quiet --headless --export-debug Windows ../bin/Windows/GoZen_Lite.x86_64
       - name: Uploading GDExtension artifact debug
         if: ${{ github.event.inputs.build_target == 'debug' }}
         uses: actions/upload-artifact@v4
@@ -152,7 +153,7 @@ jobs:
         run: |
           scons -C gde_gozen -j4 target=template_release platform=windows arch=x86_64 use_system=no enable_small=yes
           cp gde_gozen/bin/windows_template_release/* bin/Windows
-          godot --import src_project --quiet --headless --export-debug Windows ../bin/Windows/GoZen_Lite.x86_64
+          ./Godot_v${GODOT_VERSION}-stable_linux.x86_64 --import src/project.godot --quiet --headless --export-debug Windows ../bin/Windows/GoZen_Lite.x86_64
       - name: Uploading GDExtension artifact release
         if: ${{ github.event.inputs.build_target == 'release' }}
         uses: actions/upload-artifact@v4
