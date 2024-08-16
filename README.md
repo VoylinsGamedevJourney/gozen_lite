@@ -1,3 +1,5 @@
+[![Video editor build](https://github.com/VoylinsGamedevJourney/gozen_lite/actions/workflows/build.yml/badge.svg)](https://github.com/VoylinsGamedevJourney/gozen_lite/actions/workflows/build.yml)
+
 # GoZen Lite
 
 GoZen Lite is a video player made in Godot together with the [GoZen GDExtension](https://github.com/VoylinsGamedevJourney/gozen_gdextension). The goal of this lite version of GoZen is to serve as a type of test room for the full GoZen version. This does not mean that GoZen Lite won't be useable. My goal for GoZen lite is to become a very lightweight and minimal video editor which can run on nearly all hardware. The biggest difference between this version and the full version will be that this version won't be able to be extended with plugins/modules and the full version will be.
