@@ -59,12 +59,16 @@ jobs:
           scons -C gde_gozen -j4 target=template_debug platform=linux arch=x86_64 use_system=yes dev_build=yes
           cp gde_gozen/bin/linux_template_debug/* bin/Linux
           ./Godot_v${GODOT_VERSION}-stable_linux.x86_64 --import src/project.godot --quiet --headless --export-debug Linux ../bin/Linux/GoZen_Lite.x86_64
+          chmod +x bin/Linux/GoZen_Lite.sh
+          chmod +x bin/Linux/GoZen_Lite.x86_64
+      - name: 'Tar files'
+        run: tar -cvf bin/Linux.tar bin/Linux
       - name: Uploading GDExtension artifact debug
         if: ${{ github.event.inputs.build_target == 'debug' }}
         uses: actions/upload-artifact@v4
         with:
           name: GoZen_Lite_linux_debug_${{ env.date }}
-          path: bin/Linux
+          path: bin/Linux.tar
 
       - name: Building debug Linux full
         if: ${{ github.event.inputs.build_target == 'debug' }}
@@ -72,12 +76,16 @@ jobs:
           scons -C gde_gozen -j4 target=template_debug platform=linux arch=x86_64 use_system=no dev_build=yes
           cp gde_gozen/bin/linux_full_template_debug/* bin/Linux_full
           ./Godot_v${GODOT_VERSION}-stable_linux.x86_64 --import src/project.godot --quiet --headless --export-debug Linux_full ../bin/Linux_full/GoZen_Lite.x86_64
+          chmod +x bin/Linux_full/GoZen_Lite.sh
+          chmod +x bin/Linux_full/GoZen_Lite.x86_64
+      - name: 'Tar files'
+        run: tar -cvf bin/Linux_full.tar bin/Linux_full
       - name: Uploading GDExtension artifact full debug
         if: ${{ github.event.inputs.build_target == 'debug' }}
         uses: actions/upload-artifact@v4
         with:
           name: GoZen_Lite_linux_full_debug_${{ env.date }}
-          path: bin/Linux_full
+          path: bin/Linux_full.tar
 
         # RELEASE BUILDS
       - name: Building release Linux
@@ -86,12 +94,16 @@ jobs:
           scons -C gde_gozen -j4 target=template_release platform=linux arch=x86_64 use_system=yes
           cp gde_gozen/bin/linux_template_release/* bin/Linux
           ./Godot_v${GODOT_VERSION}-stable_linux.x86_64 --import src/project.godot --quiet --headless --export-debug Linux ../bin/Linux/GoZen_Lite.x86_64
+          chmod +x bin/Linux/GoZen_Lite.sh
+          chmod +x bin/Linux/GoZen_Lite.x86_64
+      - name: 'Tar files'
+        run: tar -cvf bin/Linux.tar bin/Linux
       - name: Uploading GDExtension artifact release
         if: ${{ github.event.inputs.build_target == 'release' }}
         uses: actions/upload-artifact@v4
         with:
           name: GoZen_Lite_linux_release_${{ env.date }}
-          path: bin/Linux
+          path: bin/Linux.tar
 
       - name: Building release Linux full
         if: ${{ github.event.inputs.build_target == 'release' }}
@@ -99,12 +111,16 @@ jobs:
           scons -C gde_gozen -j4 target=template_release platform=linux arch=x86_64 use_system=no enable_small=yes
           cp gde_gozen/bin/linux_full_template_release/* bin/Linux
           ./Godot_v${GODOT_VERSION}-stable_linux.x86_64 --import src/project.godot --quiet --headless --export-debug Linux_full ../bin/Linux_full/GoZen_Lite.x86_64
+          chmod +x bin/Linux_full/GoZen_Lite.sh
+          chmod +x bin/Linux_full/GoZen_Lite.x86_64
+      - name: 'Tar files'
+        run: tar -cvf bin/Linux_full.tar bin/Linux_full
       - name: Uploading GDExtension artifact full release
         if: ${{ github.event.inputs.build_target == 'release' }}
         uses: actions/upload-artifact@v4
         with:
           name: GoZen_Lite_linux_full_release_${{ env.date }}
-          path: bin/Linux_full
+          path: bin/Linux_full.tar
 
   windows-build:
     if: ${{ github.event.inputs.job_target == 'windows' || github.event.inputs.job_target == 'both' }}
