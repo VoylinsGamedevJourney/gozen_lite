@@ -1,28 +1,162 @@
-name: Release build
-run-name: Release build!
-on: [workflow_dispatch]
+name: Video editor build
+run-name: GoZen Video Editor gdextension build
+on: 
+  workflow_dispatch:
+    inputs:
+      build_target:
+        description: 'Select the build target'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+      job_target:
+        description: 'Select the platform'
+        required: true
+        default: 'linux'
+        type: choice
+        options:
+          - linux
+          - windows
+          - both
+
+env:
+  GODOT_VERSION: 4.3
+
 jobs:
   linux-build:
+    if: ${{ github.event.inputs.job_target == 'linux' || github.event.inputs.job_target == 'both' }}
     runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
     steps:
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Set date variable
+        id: get-date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+
+      - name: Installing dependencies
+        run: pacman -Syu --noconfirm ffmpeg git bash yasm python python-pip scons gcc diffutils make
+      - name: Checkout submodules
+        uses: actions/checkout@v4
         with:
-          python-version: '3.x'
+          submodules: recursive
 
-      # Godot stuff
-      - name: Install Godot
-        run: sudo apt-get update && sudo apt-get install godot
-      - name: Import files in project # Use --import from godot version 4.3+
-        run: godot -q project_path -e --quit-after 5 --headless
-      
-      # Building
-      - name: Build Linux Release video only
-        run: scons -Q -j4 target=template_release platform=linux arch=x86_64 use_system=yes
+      - name: Prepare Godot
+        run: |
+          wget -O godot_linux.zip https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip godot_linux.zip
+          wget -O godot_export_templates.tpz https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          tar -xf godot_export_templates.tpz -C ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          sed -i "s/config\/version=\"[0-9-]\+-alpha\"/config\/version=\"${{ env.date }}-alpha\"/" src/project.godot
 
-      # Packing things up
-      - name: Uploading GDExtension artifact
+      # DEBUG BUILDS
+      - name: Building debug Linux
+        if: ${{ github.event.inputs.build_target == 'debug' }}
+        run: |
+          scons -C gde_gozen -j4 target=template_debug platform=linux arch=x86_64 use_system=yes dev_build=yes
+          cp gde_gozen/bin/linux_template_debug/* bin/Linux
+          godot --import src_project --quiet --headless --export-debug Linux ../bin/Linux/GoZen_Lite.x86_64
+      - name: Uploading GDExtension artifact debug
+        if: ${{ github.event.inputs.build_target == 'debug' }}
         uses: actions/upload-artifact@v4
         with:
-          name: gde_gozen-linux-release-video-only
-          path: bin/linux_video_only_template_release/*
+          name: GoZen_Lite_linux_debug_${{ env.date }}
+          path: bin/Linux
+
+      - name: Building debug Linux full
+        if: ${{ github.event.inputs.build_target == 'debug' }}
+        run: |
+          scons -C gde_gozen -j4 target=template_debug platform=linux arch=x86_64 use_system=no dev_build=yes
+          cp gde_gozen/bin/linux_full_template_debug/* bin/Linux_full
+          godot --import src_project --quiet --headless --export-debug Linux_full ../bin/Linux_full/GoZen_Lite.x86_64
+      - name: Uploading GDExtension artifact full debug
+        if: ${{ github.event.inputs.build_target == 'debug' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: GoZen_Lite_linux_full_debug_${{ env.date }}
+          path: bin/Linux_full
+
+        # RELEASE BUILDS
+      - name: Building release Linux
+        if: ${{ github.event.inputs.build_target == 'release' }}
+        run: |
+          scons -C gde_gozen -j4 target=template_release platform=linux arch=x86_64 use_system=yes
+          cp gde_gozen/bin/linux_template_release/* bin/Linux
+          godot --import src_project --quiet --headless --export-debug Linux ../bin/Linux/GoZen_Lite.x86_64
+      - name: Uploading GDExtension artifact release
+        if: ${{ github.event.inputs.build_target == 'release' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: GoZen_Lite_linux_release_${{ env.date }}
+          path: bin/Linux
+
+      - name: Building release Linux full
+        if: ${{ github.event.inputs.build_target == 'release' }}
+        run: |
+          scons -C gde_gozen -j4 target=template_release platform=linux arch=x86_64 use_system=no enable_small=yes
+          cp gde_gozen/bin/linux_full_template_release/* bin/Linux
+          godot --import src_project --quiet --headless --export-debug Linux_full ../bin/Linux_full/GoZen_Lite.x86_64
+      - name: Uploading GDExtension artifact full release
+        if: ${{ github.event.inputs.build_target == 'release' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: GoZen_Lite_linux_full_release_${{ env.date }}
+          path: bin/Linux_full
+
+  windows-build:
+    if: ${{ github.event.inputs.job_target == 'windows' || github.event.inputs.job_target == 'both' }}
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Set date variable
+        id: get-date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Prepare Godot
+        run: |
+          wget -O godot_linux.zip https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip godot_linux.zip
+          wget -O godot_export_templates.tpz https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          tar -xf godot_export_templates.tpz -C ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          sed -i "s/config\/version=\"[0-9-]\+-alpha\"/config\/version=\"${{ env.date }}-alpha\"/" src/project.godot
+
+      - name: Installing dependencies
+        run: pacman -Syu --noconfirm ffmpeg git bash yasm python python-pip scons gcc diffutils make mingw-w64 godot
+      - name: Checkout submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+        # DEBUG BUILD
+      - name: Building debug Windows
+        if: ${{ github.event.inputs.build_target == 'debug' }}
+        run: |
+          scons -C gde_gozen -j4 target=template_debug platform=windows arch=x86_64 use_system=no dev_build=yes
+          cp gde_gozen/bin/windows_template_debug/* bin/Windows
+          godot --import src_project --quiet --headless --export-debug Windows ../bin/Windows/GoZen_Lite.x86_64
+      - name: Uploading GDExtension artifact debug
+        if: ${{ github.event.inputs.build_target == 'debug' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: GoZen_Lite_windows_debug_${{ env.date }}
+          path: bin/Windows
+
+        # RELEASE BUILD
+      - name: Building release Windows
+        if: ${{ github.event.inputs.build_target == 'release' }}
+        run: |
+          scons -C gde_gozen -j4 target=template_release platform=windows arch=x86_64 use_system=no enable_small=yes
+          cp gde_gozen/bin/windows_template_release/* bin/Windows
+          godot --import src_project --quiet --headless --export-debug Windows ../bin/Windows/GoZen_Lite.x86_64
+      - name: Uploading GDExtension artifact release
+        if: ${{ github.event.inputs.build_target == 'release' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: GoZen_Lite_windows_release_${{ env.date }}
+          path: bin/Windows
+
