@@ -79,19 +79,19 @@ func print_debug_info() -> void:
 				RenderingServer.get_video_adapter_api_version(),
 				RenderingServer.get_video_adapter_type()]],
 			["Debug build", OS.is_debug_build()]]:
-		print_rich("[color=purple][b]%s[/b] %s[/color]" % l_info)
+		print_rich("[color=purple][b]%s[/b] %s" % l_info)
 
 	var l_encoders: Dictionary = Renderer.get_supported_codecs()
-	print_rich("[color=purple][b]Supported video encoders[/b][/color]")
+	print_rich("[color=purple][b]Supported video encoders")
 	for l_video_codec: String in l_encoders.video:
-		print_rich("\t[color=purple][b]%s:[/b] Supported: %s, Hardware encoding: %s[/color]" % [
+		print_rich("\t[color=purple][b]%s:[/b] Supported: %s, Hardware encoding: %s" % [
 			l_video_codec,	
 			l_encoders.video[l_video_codec].supported,
 			l_encoders.video[l_video_codec].hardware_accel])
 
-	print_rich("[color=purple][b]Supported audio encoders[/b][/color]")
+	print_rich("[color=purple][b]Supported audio encoders")
 	for l_audio_codec: String in l_encoders.audio:
-		print_rich("\t[color=purple][b]%s:[/b] Supported: %s, Hardware encoding: %s[/color]" % [
+		print_rich("\t[color=purple][b]%s:[/b] Supported: %s, Hardware encoding: %s" % [
 			l_audio_codec,	
 			l_encoders.audio[l_audio_codec].supported,
 			l_encoders.audio[l_audio_codec].hardware_accel])
